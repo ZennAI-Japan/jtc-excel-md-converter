@@ -5,6 +5,9 @@ description = "JTC-style Excel design document to Markdown/JSON converter protot
 requires-python = ">=3.10"
 dependencies = ["openpyxl>=3.1.0"]
 
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
 [project.scripts]
 jtc-md-convert = "jtc_excel_md.cli:main"
 
