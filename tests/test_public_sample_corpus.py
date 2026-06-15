@@ -71,10 +71,10 @@ def test_readme_is_public_oss_copy_without_internal_positioning():
     ]
     for phrase in banned:
         assert phrase not in text, phrase
-    assert "公開サンプル文書で評価する" in text
+    assert "公開サンプルで動作確認する" in text
     assert "scripts/fetch_public_sample_corpus.py" in text
     assert "ローカルファースト" in text
-    assert "JTCのドキュメント仕事を終わらせる" in text
+    assert "Word / Excelで作られた業務文書" in text
     assert "JTC企業でよく使われるWord / Excelの業務文書" in text
     assert "テキストPDFにも対応しています" in text
     assert "docs/assets/social-preview.png" in text
