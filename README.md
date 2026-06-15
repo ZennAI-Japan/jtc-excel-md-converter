@@ -1,8 +1,8 @@
 # JTC Excel MD Converter
 
-Word / Excel / PDF の業務文書を、Markdown・構造化JSON・レビュー用HTMLへ変換するローカルファーストのOSSツールです。
+JTC企業でよく使われるWord / Excelの業務文書を、Markdown・構造化JSON・レビュー用HTMLへ変換するローカルファーストのOSSツールです。
 
-Excel方眼紙の罫線、結合セル、セル座標、入力規則、コメント、Word文書の見出し・段落・表、テキストPDFの本文を、後続の検索・レビュー・AI活用で扱いやすい形式に変換します。
+Excel方眼紙の罫線、結合セル、セル座標、入力規則、コメント、Word文書の見出し・段落・表を、後続の検索・レビュー・AI活用で扱いやすい形式に変換します。テキストPDFにも対応しています。
 
 ![JTC Excel MD Converter の概要](docs/assets/social-preview.png)
 
