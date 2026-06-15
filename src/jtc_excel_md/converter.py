@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import zipfile
 from html import escape
 from pathlib import Path
 from typing import Any, cast
@@ -33,7 +34,10 @@ def write_outputs(result: dict[str, Any], output_dir: str | Path) -> None:
         json.dumps(_json_payload(result), ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
-    (out / "specification.md").write_text(result["markdown"] + "\n", encoding="utf-8")
+    specification = result["markdown"] + "\n"
+    (out / "book_specification.md").write_text(specification, encoding="utf-8")
+    # Keep the original filename for backward compatibility with the initial CLI/README contract.
+    (out / "specification.md").write_text(specification, encoding="utf-8")
     warnings = result.get("warnings") or ["要確認項目は検出されませんでした。"]
     (out / "warnings.md").write_text(
         "# Warnings\n\n" + "\n".join(f"- {warning}" for warning in warnings) + "\n",
@@ -41,6 +45,24 @@ def write_outputs(result: dict[str, Any], output_dir: str | Path) -> None:
     )
     (out / "preview.html").write_text(_render_preview_html(result), encoding="utf-8")
     (out / "evaluation.md").write_text(_render_evaluation(result), encoding="utf-8")
+    _write_package_zip(out)
+
+
+def _write_package_zip(output_dir: Path) -> None:
+    package_path = output_dir / "package.zip"
+    artifact_names = [
+        "book_specification.md",
+        "specification.md",
+        "extracted.json",
+        "warnings.md",
+        "preview.html",
+        "evaluation.md",
+    ]
+    with zipfile.ZipFile(package_path, "w", compression=zipfile.ZIP_DEFLATED) as package:
+        for name in artifact_names:
+            path = output_dir / name
+            if path.exists():
+                package.write(path, arcname=name)
 
 
 def _json_payload(result: dict[str, Any]) -> dict[str, Any]:

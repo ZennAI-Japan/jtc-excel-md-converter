@@ -10,6 +10,7 @@ dev = ["pytest>=8.0"]
 
 [project.scripts]
 jtc-md-convert = "jtc_excel_md.cli:main"
+jtc-md-demo = "jtc_excel_md.demo_server:main"
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

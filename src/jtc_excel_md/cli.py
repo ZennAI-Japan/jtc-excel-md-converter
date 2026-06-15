@@ -15,10 +15,12 @@ def main() -> None:
     result = convert_workbook(args.input)
     write_outputs(result, args.out)
     print(f"wrote: {args.out / 'extracted.json'}")
+    print(f"wrote: {args.out / 'book_specification.md'}")
     print(f"wrote: {args.out / 'specification.md'}")
     print(f"wrote: {args.out / 'warnings.md'}")
     print(f"wrote: {args.out / 'preview.html'}")
     print(f"wrote: {args.out / 'evaluation.md'}")
+    print(f"wrote: {args.out / 'package.zip'}")
 
 
 if __name__ == "__main__":

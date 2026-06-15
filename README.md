@@ -16,14 +16,43 @@ This MVP focuses on preserving information that generic spreadsheet-to-Markdown 
 python -m venv .venv
 source .venv/bin/activate
 pip install -e '.[dev]'
+python -m pytest -q
 jtc-md-convert examples/jtc_screen_design.xlsx --out outputs/jtc_screen_design
 ```
 
 Generated files:
 
 - `extracted.json` — structured sheet/block/cell data
-- `specification.md` — human/AI-readable Markdown
+- `book_specification.md` — workbook-level Markdown specification
+- `specification.md` — backward-compatible Markdown filename
 - `warnings.md` — items requiring review
+- `preview.html` — cell-coordinate review preview
+- `evaluation.md` — conversion summary
+- `package.zip` — downloadable artifact bundle
+
+## Local demo UI
+
+Run the KEPCO-oriented local demo UI:
+
+```bash
+jtc-md-demo examples/jtc_screen_design.xlsx --out outputs/demo-app --port 8765
+```
+
+Open:
+
+```text
+http://127.0.0.1:8765/
+```
+
+The initial demo runs locally and does not send document content to external LLM/API services.
+It shows the sheet list, extracted preview, workbook-level Markdown artifact, structured JSON,
+review HTML, evaluation report, warnings, and ZIP download route.
+
+Smoke-test the rendered UI and capture a screenshot:
+
+```bash
+python scripts/smoke_demo_ui.py
+```
 
 ## Scope
 
