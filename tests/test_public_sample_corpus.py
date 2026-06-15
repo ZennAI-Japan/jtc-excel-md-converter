@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 import io
 import re
+import tomllib
 
 
 def test_public_sample_manifest_has_ten_supported_documents():
@@ -77,6 +78,23 @@ def test_readme_is_public_oss_copy_without_internal_positioning():
     assert "PyMuPDF" in text
     assert "AGPL-3.0-or-later" in text
     assert "SHA-256" in text
+    assert "pip install -e '.[pdf]'" in text
+    assert "jtc-excel-md-converter[pdf]" in text
+
+
+def test_pyproject_keeps_pymupdf_in_optional_pdf_extra():
+    data = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
+    dependencies = data["project"]["dependencies"]
+    optional = data["project"]["optional-dependencies"]
+
+    assert not any("PyMuPDF" in item for item in dependencies)
+    assert any("PyMuPDF" in item for item in optional["pdf"])
+    assert any("PyMuPDF" in item for item in optional["dev"])
+
+
+def test_docker_runtime_installs_pdf_extra_for_pdf_smoke():
+    text = Path("Dockerfile").read_text(encoding="utf-8")
+    assert "pip install --no-cache-dir '.[pdf]'" in text
 
 
 def test_notice_documents_pdf_dependency_license_boundary():

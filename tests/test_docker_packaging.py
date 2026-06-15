@@ -12,7 +12,7 @@ def test_docker_assets_define_reproducible_cli_runtime():
     assert dockerfile.exists()
     dockerfile_text = dockerfile.read_text(encoding="utf-8")
     assert "python:3.12-slim" in dockerfile_text
-    assert "pip install --no-cache-dir ." in dockerfile_text
+    assert "pip install --no-cache-dir '.[pdf]'" in dockerfile_text
     assert "USER app" in dockerfile_text
     assert 'ENTRYPOINT ["jtc-md-convert"]' in dockerfile_text
 

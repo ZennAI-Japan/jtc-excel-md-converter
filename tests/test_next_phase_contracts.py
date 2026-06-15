@@ -42,6 +42,25 @@ def test_cli_accepts_text_pdf_and_writes_standard_artifacts(tmp_path: Path):
     assert "# 請求管理システム PDF設計書" in (out / "book_specification.md").read_text(encoding="utf-8")
 
 
+def test_pdf_converter_guides_users_to_optional_pdf_extra_when_dependency_missing(tmp_path: Path, monkeypatch):
+    import jtc_excel_md.pdf_converter as pdf_converter
+
+    pdf_path = tmp_path / "design.pdf"
+    pdf_path.write_bytes(b"%PDF-1.4\n")
+    monkeypatch.setattr(pdf_converter, "pymupdf", None)
+
+    try:
+        pdf_converter.convert_pdf_document(pdf_path)
+    except RuntimeError as exc:
+        message = str(exc)
+    else:
+        raise AssertionError("missing PyMuPDF must fail closed")
+
+    assert "optional `pdf` extra" in message
+    assert "pip install -e '.[pdf]'" in message
+    assert "pip install -e '.[dev]'" in message
+
+
 def test_ai_restructure_writes_reviewable_artifacts_without_mutating_base_outputs(tmp_path: Path):
     from jtc_excel_md.ai_providers import AIResponse
     from jtc_excel_md.ai_restructure import restructure_output_dir
