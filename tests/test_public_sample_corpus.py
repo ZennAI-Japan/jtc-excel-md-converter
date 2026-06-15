@@ -68,6 +68,8 @@ def test_readme_is_public_oss_copy_without_internal_positioning():
         "ZennAI",
         "社内承認済み",
         "初期デモ",
+        "評価レポート",
+        "文書セット評価",
     ]
     for phrase in banned:
         assert phrase not in text, phrase
@@ -76,6 +78,10 @@ def test_readme_is_public_oss_copy_without_internal_positioning():
     assert "ローカルファースト" in text
     assert "Word / Excelで作られた業務文書" in text
     assert "JTC企業でよく使われるWord / Excelの業務文書" in text
+    assert "できること / まだ苦手なこと" in text
+    assert "このツールは、そうした構造を読み取り、Markdown仕様書として出力します" in text
+    assert "抽出件数などの変換サマリー" in text
+    assert "完璧な文書理解AIではありません" in text
     assert "テキストPDFにも対応しています" in text
     assert "docs/assets/social-preview.png" in text
     assert "PyMuPDF" in text
