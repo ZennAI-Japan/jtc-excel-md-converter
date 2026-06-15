@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Mapping
 
 PROVIDER_ENV_PREFIXES = {
+    "codex": "OPENAI",
     "openai": "OPENAI",
     "anthropic": "ANTHROPIC",
     "google": "GOOGLE",
@@ -139,6 +140,8 @@ def _clean(value: str | None) -> str | None:
 
 
 def _default_base_url(provider: str) -> str | None:
+    if provider in {"codex", "openai"}:
+        return "https://api.openai.com/v1"
     if provider in {"ollama", "lmstudio", "local"}:
         return "http://127.0.0.1:11434/v1"
     return None
@@ -146,6 +149,7 @@ def _default_base_url(provider: str) -> str | None:
 
 def _default_model(provider: str) -> str | None:
     defaults = {
+        "codex": "codex-mini-latest",
         "openai": "gpt-4o-mini",
         "anthropic": "claude-3-5-haiku-latest",
         "google": "gemini-1.5-flash",

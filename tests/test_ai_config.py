@@ -43,6 +43,23 @@ def test_ai_config_loads_generic_openai_compatible_environment():
     assert "placeholder-key" not in repr(config)
 
 
+def test_codex_provider_uses_openai_key_and_default_codex_model():
+    from jtc_excel_md.ai_config import load_ai_config
+
+    config = load_ai_config(
+        env={
+            "JTC_AI_PROVIDER": "codex",
+            "OPENAI_API_KEY": "placeholder-openai-key",
+        }
+    )
+
+    assert config.enabled is True
+    assert config.provider == "codex"
+    assert config.api_key == "placeholder-openai-key"
+    assert config.base_url == "https://api.openai.com/v1"
+    assert config.model == "codex-mini-latest"
+
+
 def test_ai_config_supports_provider_specific_keys():
     from jtc_excel_md.ai_config import load_ai_config
 

@@ -2,7 +2,7 @@
 
 > **For Hermes / Codex:** Make the project useful as open source software without weakening document privacy. The converter must stay deterministic by default. AI features are optional, explicit, and configured by the user's own provider/API key.
 
-**Goal:** Let any user run the converter locally and optionally connect their own AI provider, including hosted APIs and local OpenAI-compatible endpoints.
+**Goal:** Let any user run the converter locally for Excel/Word enterprise documents and optionally connect their own AI provider, including hosted APIs and local OpenAI-compatible endpoints.
 
 **Architecture:** Keep `converter.py` as the deterministic extraction core. Add AI as a separate optional layer that receives explicit artifacts and returns reviewable Markdown/restructure suggestions. Do not make AI calls from the core converter or local demo unless the user has opted in through config.
 
@@ -21,11 +21,13 @@
 
 ## Current foundation in this PR
 
-- `.env.example` documents provider settings.
+- `.env.example` documents provider settings, with `codex` as the recommended initial hosted API mode.
 - `src/jtc_excel_md/ai_config.py` loads and sanitizes provider settings without importing vendor SDKs.
+- `src/jtc_excel_md/word_converter.py` adds deterministic `.docx` heading/paragraph/table extraction into the same artifact contract.
 - `src/jtc_excel_md/ai_providers.py` defines the optional provider adapter interface and OpenAI-compatible request builder without making network calls from the converter.
-- `tests/test_ai_config.py` verifies generic, provider-specific, file-based, and local no-key configuration.
+- `tests/test_ai_config.py` verifies generic, provider-specific, Codex-first, file-based, and local no-key configuration.
 - `tests/test_ai_providers.py` verifies disabled-provider behavior, secret-safe request metadata, and injected HTTP-boundary handling.
+- `tests/test_word_converter.py` verifies `.docx` extraction and CLI artifact generation.
 - `.gitignore` excludes `.env` and `.env.*` while keeping `.env.example` tracked.
 - `CONTRIBUTING.md`, `SECURITY.md`, and `LICENSE` establish initial OSS hygiene.
 

@@ -121,7 +121,7 @@ class OpenAICompatibleProvider:
 def build_ai_provider(config: AIConfig, *, http_post: HTTPPost | None = None) -> AIProvider:
     if not config.enabled:
         return DisabledAIProvider()
-    if config.provider in {"openai-compatible", "ollama", "lmstudio", "local"}:
+    if config.provider in {"codex", "openai", "openai-compatible", "ollama", "lmstudio", "local"}:
         provider_config = config if config.provider == "openai-compatible" else _as_openai_compatible(config)
         return OpenAICompatibleProvider(provider_config, http_post=http_post)
     return DisabledAIProvider()

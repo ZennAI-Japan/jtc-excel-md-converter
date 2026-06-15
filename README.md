@@ -1,6 +1,6 @@
 # JTC Excel MD Converter
 
-Local-first open source toolkit for converting Japanese enterprise “Excel方眼紙” design documents into Markdown, structured JSON, and reviewable artifacts.
+Local-first open source toolkit for converting Japanese enterprise Excel/Word design documents into Markdown, structured JSON, and reviewable artifacts.
 
 The deterministic converter works without AI credentials. Optional AI-assisted restructuring is designed as bring-your-own-AI: users can configure their own hosted API, OpenAI-compatible gateway, or local model runtime without committing keys to the repository.
 
@@ -11,6 +11,7 @@ This MVP focuses on preserving information that generic spreadsheet-to-Markdown 
 - cell coordinates
 - data validation / dropdown options
 - comments and warning output for human review
+- Word `.docx` paragraphs/headings/tables as deterministic Markdown/JSON
 
 ## Quick start
 
@@ -20,6 +21,8 @@ source .venv/bin/activate
 pip install -e '.[dev]'
 python -m pytest -q
 jtc-md-convert examples/jtc_screen_design.xlsx --out outputs/jtc_screen_design
+# Word .docx files use the same artifact contract:
+# jtc-md-convert path/to/design.docx --out outputs/word_design
 ```
 
 Generated files:
@@ -42,6 +45,7 @@ cp .env.example .env
 
 The current configuration contract supports:
 
+- `codex` — recommended initial hosted API mode using OpenAI credentials
 - `openai`
 - `anthropic`
 - `google`
@@ -49,6 +53,15 @@ The current configuration contract supports:
 - `ollama`
 - `lmstudio`
 - `local`
+
+Codex-first hosted API example:
+
+```text
+JTC_AI_PROVIDER=codex
+OPENAI_API_KEY=your-local-key
+JTC_AI_BASE_URL=https://api.openai.com/v1
+JTC_AI_MODEL=codex-mini-latest
+```
 
 Generic OpenAI-compatible or local gateway example:
 

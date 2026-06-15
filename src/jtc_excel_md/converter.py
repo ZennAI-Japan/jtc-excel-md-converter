@@ -254,6 +254,8 @@ def _escape_md(value: str) -> str:
 
 
 def _render_preview_html(result: dict[str, Any]) -> str:
+    if result.get("source_type") == "word_document":
+        return _render_word_preview_html(result)
     sections: list[str] = []
     for sheet in result["sheets"]:
         sections.append(f"<section><h2>{escape(sheet['name'])}</h2>")
@@ -302,6 +304,58 @@ def _render_preview_html(result: dict[str, Any]) -> str:
 <body>
   <h1>JTC Excel Design Preview</h1>
   <p>Extracted preview for human review. Cell coordinates are shown for traceability.</p>
+  {body}
+</body>
+</html>
+"""
+
+
+def _render_word_preview_html(result: dict[str, Any]) -> str:
+    document = result.get("document") or {}
+    paragraphs = document.get("paragraphs", []) if isinstance(document, dict) else []
+    tables = document.get("tables", []) if isinstance(document, dict) else []
+    sections: list[str] = []
+    if isinstance(paragraphs, list):
+        sections.append("<section><h2>Paragraphs</h2>")
+        for paragraph in paragraphs:
+            if not isinstance(paragraph, dict):
+                continue
+            style = paragraph.get("style") or "normal"
+            text = str(paragraph.get("text") or "")
+            sections.append(
+                f'<p class="paragraph"><span>{escape(str(style))}</span>{escape(text).replace(chr(10), "<br>")}</p>'
+            )
+        sections.append("</section>")
+    if isinstance(tables, list):
+        for table in tables:
+            if not isinstance(table, dict):
+                continue
+            rows = table.get("rows") or []
+            if not isinstance(rows, list):
+                continue
+            sections.append(f"<section><h2>Table {escape(str(table.get('index') or ''))}</h2><table>")
+            for row in rows:
+                if not isinstance(row, list):
+                    continue
+                sections.append("<tr>" + "".join(f"<td>{escape(str(cell))}</td>" for cell in row) + "</tr>")
+            sections.append("</table></section>")
+    body = "\n  ".join(sections)
+    return f"""<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>Word Document Preview</title>
+  <style>
+    body {{ font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif; margin: 32px; color: #172033; }}
+    table {{ border-collapse: collapse; margin: 12px 0 28px; width: 100%; }}
+    td {{ border: 1px solid #9aa4b2; padding: 8px 10px; vertical-align: top; }}
+    .paragraph {{ background: #f8fafc; border-left: 4px solid #315b8c; padding: 10px 12px; }}
+    .paragraph span {{ color: #667085; display: inline-block; margin-right: 12px; font-family: ui-monospace, monospace; }}
+  </style>
+</head>
+<body>
+  <h1>Word Document Preview</h1>
+  <p>Extracted preview for human review. Paragraph styles and table text are shown for traceability.</p>
   {body}
 </body>
 </html>
