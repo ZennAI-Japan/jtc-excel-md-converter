@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+outputs/
+.env
+.env.*
+!.env.example
+.DS_Store
+src/*.egg-info/
+private-corpus/
+private-evaluation-output/

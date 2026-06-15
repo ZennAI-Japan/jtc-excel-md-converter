@@ -1,12 +1,35 @@
 [project]
 name = "jtc-excel-md-converter"
 version = "0.1.0"
-description = "JTC-style Excel design document to Markdown/JSON converter prototype"
+description = "Local-first enterprise Excel/Word design document to Markdown/JSON converter"
+readme = "README.md"
+license = { file = "LICENSE" }
 requires-python = ">=3.10"
-dependencies = ["openpyxl>=3.1.0"]
+dependencies = ["openpyxl>=3.1.0", "PyMuPDF>=1.24.0"]
+keywords = ["excel", "word", "docx", "markdown", "document-conversion", "enterprise", "ai"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Office/Business",
+  "Topic :: Text Processing :: Markup :: Markdown",
+]
+
+[project.urls]
+Homepage = "https://github.com/ZennAI-Japan/jtc-excel-md-converter"
+Repository = "https://github.com/ZennAI-Japan/jtc-excel-md-converter"
+Issues = "https://github.com/ZennAI-Japan/jtc-excel-md-converter/issues"
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+video = ["pillow>=10.0"]
 
 [project.scripts]
 jtc-md-convert = "jtc_excel_md.cli:main"
+jtc-md-demo = "jtc_excel_md.demo_server:main"
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

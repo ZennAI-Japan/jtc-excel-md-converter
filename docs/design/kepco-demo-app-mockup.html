@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>関西電力様向け 設計書ドキュメント化デモ</title>
+  <style>
+    :root {
+      --primary: #0051A2;
+      --primary-dark: #054385;
+      --accent: #B94A00;
+      --accent-decorative: #EB6100;
+      --success: #0C7A43;
+      --warning: #8A5200;
+      --danger: #C52223;
+      --ink: #172033;
+      --muted: #5E6B7A;
+      --border: #D8E0EA;
+      --surface: #FFFFFF;
+      --surface-soft: #F5F8FB;
+      --surface-blue: #EAF4FF;
+      --surface-orange: #FFF4EB;
+      --shadow: 0 18px 60px rgba(23, 32, 51, 0.10);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(180deg, #F7FAFD 0%, #EFF5FB 100%);
+      color: var(--ink);
+      font-family: Inter, "Noto Sans JP", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+    }
+
+    .page {
+      width: 1440px;
+      min-height: 900px;
+      margin: 0 auto;
+      padding: 28px;
+      background:
+        radial-gradient(circle at 88% 8%, rgba(0, 81, 162, 0.13), transparent 28%),
+        linear-gradient(180deg, rgba(255,255,255,0.7), rgba(245,248,251,0.9));
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 22px;
+      background: rgba(255,255,255,0.86);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: 0 12px 36px rgba(23, 32, 51, 0.06);
+    }
+
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .brand-mark {
+      width: 42px; height: 42px; border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      position: relative;
+      box-shadow: inset 0 -10px 24px rgba(255,255,255,0.12);
+    }
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      right: -4px; bottom: 7px;
+      width: 20px; height: 6px; border-radius: 999px;
+      background: var(--accent-decorative);
+      transform: rotate(-28deg);
+    }
+    .brand h1 { margin: 0; font-size: 20px; line-height: 1.25; letter-spacing: -0.02em; }
+    .brand p { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+    .header-actions { display: flex; gap: 10px; align-items: center; }
+    .security-note {
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 12px;
+      color: var(--primary-dark);
+      background: var(--surface-blue);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .btn.primary { background: var(--primary); color: #fff; }
+    .btn.accent { background: var(--accent); color: #fff; }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 22px;
+      margin: 22px 0;
+    }
+    .hero-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+    }
+    .eyebrow {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 14px;
+      color: var(--primary-dark);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+    }
+    .eyebrow::before { content: ""; width: 22px; height: 4px; border-radius: 99px; background: var(--accent-decorative); }
+    .hero h2 { margin: 0; max-width: 760px; font-size: 34px; line-height: 1.22; letter-spacing: -0.025em; }
+    .nowrap { white-space: nowrap; }
+    .hero .lead { margin: 14px 0 0; color: var(--muted); font-size: 15px; max-width: 780px; }
+
+    .upload-box {
+      height: 100%;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 15px;
+      border: 1px dashed #9CB8D5;
+      border-radius: 24px;
+      padding: 22px;
+      background: linear-gradient(180deg, #FFFFFF, #F8FBFF);
+    }
+    .upload-title { font-weight: 800; font-size: 16px; }
+    .file-pill {
+      align-self: center;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: white;
+    }
+    .file-icon {
+      width: 42px; height: 52px; border-radius: 8px;
+      background: linear-gradient(180deg, #EAF4FF, #D7E9FB);
+      border: 1px solid #BFD7F0;
+      display: grid; place-items: center;
+      font-size: 13px; font-weight: 900; color: var(--primary-dark);
+    }
+    .file-name { font-weight: 800; }
+    .file-meta { font-size: 12px; color: var(--muted); }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+    .metric {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 16px;
+      min-height: 104px;
+      box-shadow: 0 8px 28px rgba(23, 32, 51, 0.05);
+    }
+    .metric .label { color: var(--muted); font-size: 12px; font-weight: 700; }
+    .metric .value { margin-top: 7px; font-size: 30px; line-height: 1; font-weight: 800; letter-spacing: -0.03em; color: var(--primary-dark); }
+    .metric .sub { margin-top: 8px; color: var(--muted); font-size: 12px; }
+    .metric.warn .value { color: var(--warning); }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 290px 1fr 330px;
+      gap: 18px;
+      align-items: stretch;
+    }
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: 0 12px 40px rgba(23, 32, 51, 0.06);
+      overflow: hidden;
+    }
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      background: #FBFDFF;
+    }
+    .panel-title { margin: 0; font-size: 14px; font-weight: 800; }
+    .panel-kicker { font-size: 11px; color: var(--muted); font-weight: 700; }
+
+    .sheet-list { padding: 10px; display: grid; gap: 8px; }
+    .sheet-row {
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid transparent;
+      display: grid;
+      gap: 4px;
+      background: #fff;
+    }
+    .sheet-row.active { background: var(--surface-blue); border-color: #BBD8F4; }
+    .sheet-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .sheet-name { font-weight: 800; font-size: 13px; }
+    .sheet-type { font-size: 11px; color: var(--primary-dark); font-weight: 800; }
+    .sheet-detail { color: var(--muted); font-size: 11px; }
+
+    .preview-area { padding: 18px; }
+    .preview-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .tabset { display: flex; gap: 8px; }
+    .tab { padding: 8px 12px; border-radius: 999px; font-size: 12px; font-weight: 800; color: var(--muted); background: var(--surface-soft); }
+    .tab.active { color: #fff; background: var(--primary); }
+
+    .excel-preview {
+      border: 1px solid #BAC9D8;
+      border-radius: 18px;
+      overflow: hidden;
+      background: #fff;
+    }
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    th, td { border: 1px solid #C9D5E2; padding: 10px 8px; vertical-align: top; font-size: 12px; }
+    th { background: #F1F6FB; color: var(--primary-dark); font-weight: 800; }
+    td small { display: block; color: #8B98A8; font-family: "SFMono-Regular", monospace; font-size: 10px; margin-bottom: 3px; }
+    .title-row { background: #EAF4FF; font-weight: 900; color: var(--primary-dark); }
+
+    .markdown-preview {
+      margin-top: 14px;
+      border-radius: 18px;
+      background: #101C2D;
+      color: #EAF4FF;
+      padding: 16px;
+      font-family: "SFMono-Regular", "Roboto Mono", monospace;
+      font-size: 12px;
+      line-height: 1.65;
+      min-height: 156px;
+    }
+    .markdown-preview .md-title { color: #fff; font-weight: 900; }
+    .markdown-preview .md-accent { color: #FFBE91; }
+
+    .side-content { padding: 16px; display: grid; gap: 14px; }
+    .artifact {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      background: #fff;
+    }
+    .artifact strong { display: block; font-size: 13px; margin-bottom: 3px; }
+    .artifact span { color: var(--muted); font-size: 12px; }
+    .artifact.ready { border-color: #BFE2CE; background: #F3FBF6; }
+    .artifact.warn { border-color: #F1D8AB; background: var(--surface-orange); }
+    .warning-list { display: grid; gap: 8px; margin-top: 10px; }
+    .warning-item {
+      padding: 10px;
+      border-radius: 12px;
+      background: #fff;
+      color: var(--warning);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 0 6px;
+    }
+  </style>
+</head>
+<body>
+  <main class="page" aria-label="関西電力様向け設計書ドキュメント化デモ画面">
+    <header>
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <div>
+          <h1>設計書ドキュメント化プラットフォーム</h1>
+          <p>関西電力様向け 複数シートExcel解析デモ</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="security-note">ローカル解析・外部送信なし</div>
+        <button class="btn primary">サンプルを読み込み</button>
+        <button class="btn accent">成果物をダウンロード</button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-card">
+        <div class="eyebrow">DOCUMENT INTELLIGENCE</div>
+        <h2>複数シートに分かれたExcel設計書を、<span class="nowrap">レビュー可能な統合仕様書</span>へ変換します。</h2>
+        <p class="lead">罫線・結合セル・入力規則・コメント・セル座標を保持し、Markdown / JSON / HTML Preview / 評価レポートとして出力します。変換できない要素はwarningsとして明示します。</p>
+      </div>
+      <div class="upload-box">
+        <div class="upload-title">変換対象ファイル</div>
+        <div class="file-pill">
+          <div class="file-icon">XLSX</div>
+          <div>
+            <div class="file-name">設備点検システム_画面設計書.xlsx</div>
+            <div class="file-meta">12シート・18.4MB・最終更新 2026/06/10</div>
+          </div>
+        </div>
+        <button class="btn primary">変換を実行</button>
+      </div>
+    </section>
+
+    <section class="metrics" aria-label="変換評価サマリー">
+      <div class="metric"><div class="label">認識シート</div><div class="value">12</div><div class="sub">表紙・履歴を含む</div></div>
+      <div class="metric"><div class="label">罫線ブロック</div><div class="value">48</div><div class="sub">画面・項目・一覧</div></div>
+      <div class="metric"><div class="label">入力規則</div><div class="value">31</div><div class="sub">プルダウン候補</div></div>
+      <div class="metric warn"><div class="label">要確認</div><div class="value">7</div><div class="sub">コメント・外部参照</div></div>
+      <div class="metric"><div class="label">成果物</div><div class="value">5</div><div class="sub">Markdown / JSON 等</div></div>
+    </section>
+
+    <section class="workspace">
+      <aside class="panel">
+        <div class="panel-header">
+          <h3 class="panel-title">シート構成</h3>
+          <span class="panel-kicker">12 SHEETS</span>
+        </div>
+        <div class="sheet-list">
+          <div class="sheet-row"><div class="sheet-top"><span class="sheet-name">00_表紙</span><span class="sheet-type">表紙</span></div><div class="sheet-detail">見出し 1・warnings 0</div></div>
+          <div class="sheet-row"><div class="sheet-top"><span class="sheet-name">01_改訂履歴</span><span class="sheet-type">履歴</span></div><div class="sheet-detail">表 1・warnings 0</div></div>
+          <div class="sheet-row"><div class="sheet-top"><span class="sheet-name">02_画面一覧</span><span class="sheet-type">画面一覧</span></div><div class="sheet-detail">表 3・warnings 1</div></div>
+          <div class="sheet-row active"><div class="sheet-top"><span class="sheet-name">03_点検結果入力</span><span class="sheet-type">画面設計</span></div><div class="sheet-detail">表 5・入力規則 8・warnings 2</div></div>
+          <div class="sheet-row"><div class="sheet-top"><span class="sheet-name">04_項目定義</span><span class="sheet-type">項目定義</span></div><div class="sheet-detail">表 8・入力規則 14</div></div>
+          <div class="sheet-row"><div class="sheet-top"><span class="sheet-name">05_イベント定義</span><span class="sheet-type">イベント</span></div><div class="sheet-detail">表 4・warnings 1</div></div>
+          <div class="sheet-row"><div class="sheet-top"><span class="sheet-name">06_コード表</span><span class="sheet-type">コード表</span></div><div class="sheet-detail">表 11・入力規則 9</div></div>
+        </div>
+      </aside>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h3 class="panel-title">シートプレビュー</h3>
+          <span class="panel-kicker">03_点検結果入力</span>
+        </div>
+        <div class="preview-area">
+          <div class="preview-toolbar">
+            <div class="tabset"><span class="tab active">Preview</span><span class="tab">Markdown</span><span class="tab">JSON</span></div>
+            <span class="panel-kicker">Source range: B4:F9</span>
+          </div>
+          <div class="excel-preview">
+            <table>
+              <tr><th colspan="5" class="title-row">画面設計書：点検結果入力画面</th></tr>
+              <tr><th>項目</th><th>内容</th><th>必須</th><th>入力方式</th><th>備考</th></tr>
+              <tr><td><small>B5</small>設備ID</td><td><small>C5</small>設備マスタ参照</td><td><small>D5</small>○</td><td><small>E5</small>検索選択</td><td><small>F5</small>権限により候補制御</td></tr>
+              <tr><td><small>B6</small>点検日</td><td><small>C6</small>実施日</td><td><small>D6</small>○</td><td><small>E6</small>日付</td><td><small>F6</small>未来日不可</td></tr>
+              <tr><td><small>B7</small>判定</td><td><small>C7</small>正常 / 要確認 / 異常</td><td><small>D7</small>○</td><td><small>E7</small>プルダウン</td><td><small>F7</small>異常時は詳細必須</td></tr>
+              <tr><td><small>B8</small>添付</td><td><small>C8</small>現場写真</td><td><small>D8</small></td><td><small>E8</small>ファイル</td><td><small>F8</small>最大10件</td></tr>
+            </table>
+          </div>
+          <div class="markdown-preview">
+            <div class="md-title"># 設備点検システム 画面設計書</div>
+            <div>## 03_点検結果入力 / B4:F9</div>
+            <div class="md-accent">- 入力規則: 判定 = 正常 / 要確認 / 異常</div>
+            <div>- warnings: コメント付きセル F7、外部参照の可能性 E5</div>
+            <div>- 出力: book_specification.md / preview.html / evaluation.md</div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="panel-header">
+          <h3 class="panel-title">成果物と確認事項</h3>
+          <span class="panel-kicker">READY</span>
+        </div>
+        <div class="side-content">
+          <div class="artifact ready"><strong>book_specification.md</strong><span>複数シートを統合したMarkdown仕様書</span></div>
+          <div class="artifact ready"><strong>sheets/*.md</strong><span>シート単位のMarkdownを個別出力</span></div>
+          <div class="artifact ready"><strong>extracted.json</strong><span>仕様再構成・検索投入向け構造化データ</span></div>
+          <div class="artifact ready"><strong>preview.html</strong><span>セル座標付きの人間レビュー画面</span></div>
+          <div class="artifact warn">
+            <strong>warnings.md</strong><span>変換時の要確認事項</span>
+            <div class="warning-list">
+              <div class="warning-item">F7: コメント付きセル。仕様意図の確認が必要です。</div>
+              <div class="warning-item">E5: 入力規則が外部範囲参照の可能性があります。</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <div class="footer-note">
+      <span>関西電力様向けの業務利用を想定した、監査可能なドキュメント化デモです。</span>
+      <span>安全性: 初期デモでは外部LLM APIへ文書内容を送信しません。</span>
+    </div>
+  </main>
+</body>
+</html>
