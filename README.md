@@ -30,7 +30,7 @@ JTC企業でよく使われるWord / Excelの業務文書を、Markdown・構造
 
 詳しいBefore/Afterは [Before / After サンプル](docs/before-after-sample.md) にまとめています。
 
-入力側のExcel設計書では、罫線・結合セル・入力規則・セル座標に仕様情報が入っていることがあります。
+入力側のExcel設計書では、見た目の配置だけでなく、罫線・結合セル・入力規則・セル座標に仕様情報が入っていることがあります。
 
 ```text
 B2:H2  画面設計書：ログイン画面
@@ -38,7 +38,7 @@ B4:F7  項目 / 内容 / 必須 / 入力方式 / 備考
 E5:E7  テキスト / パスワード / チェックボックス / ラジオ
 ```
 
-変換後は、Markdown・JSON・HTMLに分かれます。
+このツールは、そうした構造を読み取り、Markdown仕様書として出力します。
 
 ```markdown
 # 画面設計書：ログイン画面
@@ -52,7 +52,38 @@ E5:E7  テキスト / パスワード / チェックボックス / ラジオ
 - E5:E7: テキスト / パスワード / チェックボックス / ラジオ
 ```
 
-`preview.html` には元文書のセル範囲や抽出ブロックが残るため、変換結果を人間が確認できます。
+同時に、機械処理しやすいJSON、人間が元文書との対応を確認するHTML、要確認事項を分けたwarningsも出力します。
+
+```text
+outputs/jtc_screen_design/
+├── book_specification.md  # 統合Markdown仕様書
+├── extracted.json         # セル範囲・表・入力規則などの構造化データ
+├── preview.html           # 元文書との対応を確認するHTML
+├── warnings.md            # 人間レビューが必要な項目
+├── evaluation.md          # 抽出件数などの変換サマリー
+└── package.zip            # 成果物一式
+```
+
+`warnings.md` には、変換結果をそのまま信じ切らないための確認事項が出ます。
+
+```text
+- 画面設計書: 結合セル B2:H2 を見出しとして解釈しました。
+- 画面設計書: コメント付きセル F5 は人手確認してください。
+```
+
+## できること / まだ苦手なこと
+
+このツールは、Word / Excel業務文書をMarkdown化するための一次変換ツールです。元文書の構造をできるだけ取り出し、AI検索・RAG・仕様レビューに渡しやすくすることを目的にしています。
+
+| できること | まだ苦手なこと |
+| --- | --- |
+| Excelの罫線ブロックをMarkdown表に変換 | 図形や画像の意味解釈 |
+| 結合セルのタイトルを見出しとして抽出 | スキャンPDFや画像内文字のOCR |
+| 入力規則・コメント・セル座標をJSONに保持 | Office上の厳密な見た目や重なり順の再現 |
+| Wordの見出し・段落・表をMarkdown / JSON化 | 文脈を読んだ設計意図の自動補完 |
+| 未対応・曖昧な内容をwarningsへ分離 | 変換結果を人手確認なしで完成仕様書にすること |
+
+つまり、完璧な文書理解AIではありません。まずローカルで安全にMarkdown / JSONへ変換し、`preview.html` と `warnings.md` で人間が確認できる状態にします。
 
 ## ローカル実行
 
@@ -83,7 +114,7 @@ jtc-md-convert path/to/design.pdf --out outputs/pdf_design
 - `specification.md`: 互換用のMarkdownファイル名
 - `warnings.md`: 人間レビューが必要な項目
 - `preview.html`: 元文書との対応を確認するHTML
-- `evaluation.md`: 変換結果の概要
+- `evaluation.md`: 抽出件数などの変換サマリー
 - `package.zip`: 成果物一式
 
 ## Docker実行
@@ -136,7 +167,7 @@ jtc-md-demo examples/jtc_screen_design.xlsx --out outputs/demo-app --port 8765
 http://127.0.0.1:8765/
 ```
 
-このデモはローカル処理のみで、外部LLM/APIへ文書内容を送信しません。シート一覧、抽出プレビュー、統合Markdown、構造化JSON、レビューHTML、評価レポート、warnings、ZIPダウンロードを確認できます。
+このデモはローカル処理のみで、外部LLM/APIへ文書内容を送信しません。シート一覧、抽出プレビュー、統合Markdown、構造化JSON、レビューHTML、変換サマリー、warnings、ZIPダウンロードを確認できます。
 
 画面スモークテストは以下です。
 
@@ -227,7 +258,7 @@ python scripts/evaluate_private_corpus.py private-corpus --out private-evaluatio
 
 このツールは汎用Excelレンダラーではありません。Excelをレイアウトキャンバスとして使った業務設計書を、レビュー可能な仕様書・機械処理しやすいデータへ変換するためのツールです。
 
-現時点では、Excel / Word / PDFの主要テキスト、表、罫線、入力規則、コメント、画像・図形・テキストボックスのプレースホルダー検出、AI整形の明示実行、文書セット評価に対応しています。画像そのもののOCR、スキャンPDFのOCR、図形の意味解釈、Office上の厳密な重なり順再現は対象外です。未対応または曖昧な内容は `warnings.md` に出力します。
+現時点では、Excel / Word / PDFの主要テキスト、表、罫線、入力規則、コメント、画像・図形・テキストボックスのプレースホルダー検出、AI整形の明示実行、文書セットの一括確認に対応しています。画像そのもののOCR、スキャンPDFのOCR、図形の意味解釈、Office上の厳密な重なり順再現は対象外です。未対応または曖昧な内容は `warnings.md` に出力します。
 
 ## 開発・テスト
 

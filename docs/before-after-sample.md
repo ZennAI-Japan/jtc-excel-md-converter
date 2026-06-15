@@ -2,6 +2,8 @@
 
 このページは、`examples/jtc_screen_design.xlsx` を実際に変換したBefore/Afterです。
 
+このサンプルで確認できるのは、Excel方眼紙の罫線ブロック、結合セル、入力規則、コメントを、Markdown・JSON・レビュー用HTML・warningsへ分けて出力できることです。企業ごとの実文書での適合性は、利用可能な模擬文書または利用許可済み文書で別途確認してください。
+
 ## 実行コマンド
 
 ```bash
@@ -111,7 +113,7 @@ outputs/jtc_screen_design/extracted.json
 }
 ```
 
-## After: レビュー用HTML / 評価 / 警告
+## After: レビュー用HTML / 変換サマリー / 警告
 
 変換後はMarkdownだけでなく、人間がレビューしやすい補助ファイルも出力します。
 
@@ -121,6 +123,8 @@ outputs/jtc_screen_design/evaluation.md
 outputs/jtc_screen_design/warnings.md
 outputs/jtc_screen_design/package.zip
 ```
+
+`evaluation.md` は品質保証ではなく、抽出できた構造量を確認するための変換サマリーです。
 
 `evaluation.md` の例:
 
@@ -146,6 +150,14 @@ outputs/jtc_screen_design/package.zip
 - 入力規則やコメントを、AI/RAGに渡せる情報として落とせる
 - `warnings.md` に要確認事項を分けるため、変換結果を過信しにくい
 - `preview.html` とセル座標で、元文書との対応を人間が確認できる
+
+## このサンプルだけでは保証しないこと
+
+- すべての企業フォーマットを同じ精度で変換できること
+- 図形や画像の意味まで自動理解できること
+- スキャンPDFや画像内文字をOCRできること
+- 人手レビューなしで完成仕様書として使えること
+- Office上の厳密な見た目や重なり順を再現できること
 
 ## 想定ユースケース
 
