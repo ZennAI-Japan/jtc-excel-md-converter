@@ -1,6 +1,8 @@
 # JTC Excel MD Converter
 
-Prototype CLI for converting Japanese enterprise “Excel方眼紙” design documents into Markdown and structured JSON.
+Local-first open source toolkit for converting Japanese enterprise “Excel方眼紙” design documents into Markdown, structured JSON, and reviewable artifacts.
+
+The deterministic converter works without AI credentials. Optional AI-assisted restructuring is designed as bring-your-own-AI: users can configure their own hosted API, OpenAI-compatible gateway, or local model runtime without committing keys to the repository.
 
 This MVP focuses on preserving information that generic spreadsheet-to-Markdown tools often lose:
 
@@ -29,6 +31,35 @@ Generated files:
 - `preview.html` — cell-coordinate review preview
 - `evaluation.md` — conversion summary
 - `package.zip` — downloadable artifact bundle
+
+## AI provider configuration
+
+Copy the template and fill only the provider you want to use:
+
+```bash
+cp .env.example .env
+```
+
+The current configuration contract supports:
+
+- `openai`
+- `anthropic`
+- `google`
+- `openai-compatible`
+- `ollama`
+- `lmstudio`
+- `local`
+
+Generic OpenAI-compatible or local gateway example:
+
+```text
+JTC_AI_PROVIDER=openai-compatible
+JTC_AI_API_KEY=
+JTC_AI_BASE_URL=http://127.0.0.1:11434/v1
+JTC_AI_MODEL=qwen2.5-coder:7b
+```
+
+Provider-specific alternatives such as `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, and `GOOGLE_API_KEY` are also supported by the config loader. The repository ignores `.env` and `.env.*`; keep real API keys local.
 
 ## Local demo UI
 
