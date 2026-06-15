@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Python / Docker smoke
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install package
+        run: python -m pip install --upgrade pip && python -m pip install -e '.[dev,video]'
+
+      - name: Compile
+        run: python -m compileall -q src tests scripts
+
+      - name: Test
+        run: python -m pytest -q
+
+      - name: Whitespace diff check
+        run: git diff --check
+
+      - name: secret assignment scan
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -RInE '(OPENAI_API_KEY|JTC_AI_API_KEY|ANTHROPIC_API_KEY|GITHUB_TOKEN|SECRET|PASSWORD)\s*=\s*[^#[:space:]][^[:space:]]+' \
+            --exclude-dir=.git --exclude-dir=.pytest_cache --exclude-dir=outputs --exclude-dir=tests --exclude-dir='*.egg-info' \
+            --exclude='.env.example' --exclude='*.md' --exclude='*.pyc' .
+
+      - name: Docker smoke
+        run: scripts/docker_smoke.sh
+
+      - name: Compose config
+        run: docker compose config --quiet
+
+      - name: Compose smoke
+        run: |
+          env UID="$(id -u)" GID="$(id -g)" docker compose run --rm jtc-md-converter
+          test -s outputs/docker-compose-smoke/extracted.json

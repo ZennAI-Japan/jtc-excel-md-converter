@@ -8,3 +8,5 @@ outputs/
 !.env.example
 .DS_Store
 src/*.egg-info/
+private-corpus/
+private-evaluation-output/

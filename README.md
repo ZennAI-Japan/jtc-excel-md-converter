@@ -8,6 +8,8 @@
 
 - Excel設計書をブック単位でMarkdown化
 - Word `.docx` をMarkdown / JSON化
+- テキストPDFをMarkdown / JSON化
+- Excel / Word内の画像、図形、テキストボックスをプレースホルダーとして検出
 - 変換結果の根拠を確認できる `preview.html` を生成
 - 要確認箇所を `warnings.md` に分離
 - `package.zip` で成果物を一括取得
@@ -39,10 +41,11 @@ python -m pytest -q
 jtc-md-convert examples/jtc_screen_design.xlsx --out outputs/jtc_screen_design
 ```
 
-Wordファイルも同じコマンドで実行できます。
+Word / PDFファイルも同じコマンドで実行できます。
 
 ```bash
 jtc-md-convert path/to/design.docx --out outputs/word_design
+jtc-md-convert path/to/design.pdf --out outputs/pdf_design
 ```
 
 生成される主なファイルは以下です。
@@ -80,7 +83,7 @@ docker compose run --rm jtc-md-converter
 LinuxでUID/GIDが `1000:1000` ではない場合は、次のように指定してください。
 
 ```bash
-UID=$(id -u) GID=$(id -g) docker compose run --rm jtc-md-converter
+env UID="$(id -u)" GID="$(id -g)" docker compose run --rm jtc-md-converter
 ```
 
 WindowsではWSLまたはGit Bashでの実行を推奨します。必要に応じて `docker run --user` の指定を利用環境に合わせてください。
@@ -141,6 +144,38 @@ jtc-md-convert examples/jtc_screen_design.xlsx \
 
 出力にはプロバイダ名、モデル名、安全化したベースURL、APIキー設定有無だけを記録します。生のAPIキーやキーの一部は `extracted.json`、`evaluation.md`、標準出力、ZIPへ書き込みません。
 
+Codex / OpenAI互換エンドポイントへ実際に整形を依頼する場合は、明示的に `--ai-restructure` を付けます。決定的に生成した `book_specification.md` は上書きせず、レビュー用の `ai_restructured_specification.md` と `ai_restructure_warnings.md` を別ファイルとして出力します。
+
+`--ai-restructure` を付けた場合だけ、抽出済みMarkdownと `extracted.json` の内容を設定したAIエンドポイントへ送信します。顧客文書を扱う場合は、社内承認済みのローカル/専用エンドポイントを使うか、送信可能な文書だけで実行してください。`--ai-restructure` なしの通常変換は外部LLM/APIへ文書内容を送りません。
+
+```bash
+jtc-md-convert examples/jtc_screen_design.xlsx \
+  --out outputs/jtc_screen_design \
+  --ai-env-file .env \
+  --ai-restructure
+```
+
+## 実顧客文書10〜30本評価
+
+実顧客文書はリポジトリに入れず、ローカルの非公開ディレクトリで評価します。
+
+```bash
+python scripts/evaluate_private_corpus.py private-corpus --out private-evaluation-output
+```
+
+`private-corpus/` と `private-evaluation-output/` は `.gitignore` 済みです。評価サマリーは `evaluation_summary.json`、`evaluation_summary.md`、`evaluation_cases.csv` に出ます。評価対象は最大30本に制限し、10本以上・失敗0件で基準達成です。CSV/Markdownにはフルパスを出さず、ケースIDとファイル名だけを残します。
+
+## public化前承認ゲート
+
+public化前は、保守者承認・実顧客文書評価・秘密情報確認・ライセンス確認を `docs/public-release-approval.md` で明示的にチェックします。
+
+```bash
+python scripts/public_release_gate.py
+```
+
+未承認の間は失敗します。これはpublic化を誤って進めないためのfail-closedゲートです。
+GitHub Actionsでは手動実行の `Public Release Gate` workflow から同じチェックを実行できます。
+
 ## ローカルデモUI
 
 関西電力様向けのローカルデモUIを起動します。
@@ -167,4 +202,4 @@ python scripts/smoke_demo_ui.py
 
 このツールは汎用Excelレンダラーではありません。Excelをレイアウトキャンバスとして使ったJTC式システム設計書を、レビュー可能な仕様書・AI投入用データへ変換するためのPoC基盤です。
 
-現時点ではMVPです。画像、図形、テキストボックス、PDF、実Codex整形実行、大量実文書評価は次フェーズです。
+現時点ではMVPです。Excel / Word / PDFの主要テキスト、表、罫線、入力規則、コメント、画像・図形・テキストボックスのプレースホルダー検出、実Codex整形の明示実行、private corpus評価ハーネス、public化前承認ゲートまで対応しています。画像そのもののOCR、スキャンPDFのOCR、図形の意味解釈、Office上の厳密な重なり順再現は対象外で、プレースホルダーとwarningsで人間確認へ回します。実顧客文書そのものの10〜30本評価は、秘密情報保護のためローカル非公開ディレクトリで実行してください。

@@ -11,17 +11,21 @@ from openpyxl.cell.cell import Cell
 from openpyxl.utils import get_column_letter, range_boundaries
 from openpyxl.worksheet.worksheet import Worksheet
 
+from .rich_media import extract_xlsx_drawing_media
+
 
 def convert_workbook(path: str | Path) -> dict[str, Any]:
     """Convert a JTC-style Excel workbook into structured JSON plus Markdown."""
     workbook_path = Path(path)
     workbook = load_workbook(workbook_path, data_only=False)
     sheets = [_extract_sheet(sheet) for sheet in workbook.worksheets]
-    warnings = _collect_warnings(sheets)
-    markdown = _render_markdown(sheets)
+    rich_media = extract_xlsx_drawing_media(workbook_path)
+    warnings = _collect_warnings(sheets, rich_media)
+    markdown = _render_markdown(sheets, rich_media)
     return {
         "source": str(workbook_path),
         "sheets": sheets,
+        "rich_media": rich_media,
         "markdown": markdown,
         "warnings": warnings,
     }
@@ -203,7 +207,7 @@ def _cell_text(cell: Cell) -> str:
     return text
 
 
-def _collect_warnings(sheets: list[dict[str, Any]]) -> list[str]:
+def _collect_warnings(sheets: list[dict[str, Any]], rich_media: dict[str, list[dict[str, str]]] | None = None) -> list[str]:
     warnings: list[str] = []
     for sheet in sheets:
         for title in sheet["titles"]:
@@ -215,10 +219,17 @@ def _collect_warnings(sheets: list[dict[str, Any]]) -> list[str]:
         for validation in sheet["validations"]:
             if validation["type"] == "list" and not validation["options"]:
                 warnings.append(f"{sheet['name']}: 入力規則 {validation['range']} は外部範囲参照の可能性があります。")
+    if rich_media:
+        if rich_media.get("textboxes"):
+            warnings.append("Excel内の図形/テキストボックスを抽出しました。セルとの位置関係は人手確認してください。")
+        if rich_media.get("images"):
+            warnings.append("Excel内の画像プレースホルダーを検出しました。画像内容は必要に応じて人手確認してください。")
+        if rich_media.get("shapes"):
+            warnings.append("Excel内の非テキスト図形プレースホルダーを検出しました。線・矢印・コネクタ等の意味は人手確認してください。")
     return warnings
 
 
-def _render_markdown(sheets: list[dict[str, Any]]) -> str:
+def _render_markdown(sheets: list[dict[str, Any]], rich_media: dict[str, list[dict[str, str]]] | None = None) -> str:
     lines: list[str] = []
     for sheet in sheets:
         title = sheet["titles"][0]["text"] if sheet["titles"] else sheet["name"]
@@ -245,6 +256,22 @@ def _render_markdown(sheets: list[dict[str, Any]]) -> str:
             for validation in sheet["validations"]:
                 option_text = " / ".join(validation["options"]) if validation["options"] else "外部参照または未解析"
                 lines.append(f"- {validation['range']}: {option_text}")
+            lines.append("")
+    if rich_media:
+        if rich_media.get("textboxes"):
+            lines.extend(["## 図形・テキストボックス", ""])
+            for item in rich_media["textboxes"]:
+                lines.append(f"- {item['drawing']} / {item['name']}: {item['text']}")
+            lines.append("")
+        if rich_media.get("images"):
+            lines.extend(["## 画像プレースホルダー", ""])
+            for item in rich_media["images"]:
+                lines.append(f"- {item['drawing']} / {item['name']}")
+            lines.append("")
+        if rich_media.get("shapes"):
+            lines.extend(["## 図形プレースホルダー", ""])
+            for item in rich_media["shapes"]:
+                lines.append(f"- {item['drawing']} / {item['name']}")
             lines.append("")
     return "\n".join(lines).strip()
 

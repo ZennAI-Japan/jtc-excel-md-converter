@@ -25,10 +25,20 @@ def convert_word_document(path: str | Path) -> dict[str, Any]:
 
     paragraphs: list[dict[str, str | int | None]] = []
     tables: list[dict[str, Any]] = []
+    textboxes: list[dict[str, str | int]] = []
+    images: list[dict[str, str | int]] = []
     ordered_blocks: list[dict[str, Any]] = []
 
     for child in list(body):
         if child.tag == f"{W_NS}p":
+            for textbox_text in _paragraph_textboxes(child):
+                textbox = {"index": len(textboxes) + 1, "text": textbox_text}
+                textboxes.append(textbox)
+                ordered_blocks.append({"type": "textbox", "textbox": textbox})
+            for image_name in _paragraph_image_names(child):
+                image = {"index": len(images) + 1, "name": image_name}
+                images.append(image)
+                ordered_blocks.append({"type": "image", "image": image})
             text = _paragraph_text(child)
             if not text:
                 continue
@@ -36,6 +46,14 @@ def convert_word_document(path: str | Path) -> dict[str, Any]:
             paragraphs.append(paragraph)
             ordered_blocks.append({"type": "paragraph", "paragraph": paragraph})
         elif child.tag == f"{W_NS}tbl":
+            for textbox_text in _element_textboxes(child):
+                textbox = {"index": len(textboxes) + 1, "text": textbox_text}
+                textboxes.append(textbox)
+                ordered_blocks.append({"type": "textbox", "textbox": textbox})
+            for image_name in _element_image_names(child):
+                image = {"index": len(images) + 1, "name": image_name}
+                images.append(image)
+                ordered_blocks.append({"type": "image", "image": image})
             rows = _table_rows(child)
             if not rows:
                 continue
@@ -43,6 +61,11 @@ def convert_word_document(path: str | Path) -> dict[str, Any]:
             tables.append(table)
             ordered_blocks.append({"type": "table", "table": table})
 
+    warnings = []
+    if textboxes:
+        warnings.append("Word内のテキストボックスを抽出しました。本文との順序や重なりは人手確認してください。")
+    if images:
+        warnings.append("Word内の画像プレースホルダーを検出しました。必要に応じて画像内容を人手確認してください。")
     markdown = _render_word_markdown(ordered_blocks)
     return {
         "source": str(document_path),
@@ -51,9 +74,11 @@ def convert_word_document(path: str | Path) -> dict[str, Any]:
         "document": {
             "paragraphs": paragraphs,
             "tables": tables,
+            "textboxes": textboxes,
+            "images": images,
         },
         "markdown": markdown,
-        "warnings": [],
+        "warnings": warnings,
     }
 
 
@@ -76,7 +101,7 @@ def _empty_result(path: Path, warnings: list[str]) -> dict[str, Any]:
         "source": str(path),
         "source_type": "word_document",
         "sheets": [],
-        "document": {"paragraphs": [], "tables": []},
+        "document": {"paragraphs": [], "tables": [], "textboxes": [], "images": []},
         "markdown": "",
         "warnings": warnings,
     }
@@ -84,14 +109,57 @@ def _empty_result(path: Path, warnings: list[str]) -> dict[str, Any]:
 
 def _paragraph_text(paragraph: ET.Element) -> str:
     parts: list[str] = []
-    for element in paragraph.iter():
-        if element.tag == f"{W_NS}t":
-            parts.append(element.text or "")
-        elif element.tag == f"{W_NS}tab":
-            parts.append("\t")
-        elif element.tag in {f"{W_NS}br", f"{W_NS}cr"}:
-            parts.append("\n")
+    _append_visible_text(paragraph, parts, in_textbox=False)
     return "".join(parts).strip()
+
+
+def _append_visible_text(element: ET.Element, parts: list[str], *, in_textbox: bool) -> None:
+    now_in_textbox = in_textbox or element.tag == f"{W_NS}txbxContent"
+    if now_in_textbox:
+        for child in list(element):
+            _append_visible_text(child, parts, in_textbox=True)
+        return
+    if element.tag == f"{W_NS}t":
+        parts.append(element.text or "")
+    elif element.tag == f"{W_NS}tab":
+        parts.append("\t")
+    elif element.tag in {f"{W_NS}br", f"{W_NS}cr"}:
+        parts.append("\n")
+    for child in list(element):
+        _append_visible_text(child, parts, in_textbox=False)
+
+
+def _paragraph_textboxes(paragraph: ET.Element) -> list[str]:
+    return _element_textboxes(paragraph)
+
+
+def _element_textboxes(element: ET.Element) -> list[str]:
+    boxes: list[str] = []
+    for content in element.iter(f"{W_NS}txbxContent"):
+        text = "".join(node.text or "" for node in content.iter(f"{W_NS}t")).strip()
+        if text:
+            boxes.append(text)
+    return boxes
+
+
+def _paragraph_image_names(paragraph: ET.Element) -> list[str]:
+    return _element_image_names(paragraph)
+
+
+def _element_image_names(element: ET.Element) -> list[str]:
+    if not any(_local_name(child.tag) in {"drawing", "pict"} for child in element.iter()):
+        return []
+    names: list[str] = []
+    for child in element.iter():
+        if _local_name(child.tag) == "cNvPr":
+            name = child.attrib.get("name")
+            if name and name not in names:
+                names.append(name)
+    return names or (["画像"] if any(_local_name(child.tag) == "drawing" for child in element.iter()) else [])
+
+
+def _local_name(tag: str) -> str:
+    return tag.rsplit("}", 1)[-1]
 
 
 def _paragraph_style(paragraph: ET.Element) -> str | None:
@@ -132,6 +200,14 @@ def _render_word_markdown(blocks: list[dict[str, Any]]) -> str:
         elif block["type"] == "table":
             rows = block["table"]["rows"]
             lines.extend(_render_table(rows))
+            lines.append("")
+        elif block["type"] == "textbox":
+            textbox = block["textbox"]
+            lines.append(f"> テキストボックス: {textbox['text']}")
+            lines.append("")
+        elif block["type"] == "image":
+            image = block["image"]
+            lines.append(f"![画像プレースホルダー: {image['name']}](#)")
             lines.append("")
     return "\n".join(lines).strip()
 

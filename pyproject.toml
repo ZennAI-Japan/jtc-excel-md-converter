@@ -5,7 +5,7 @@ description = "Local-first enterprise Excel/Word design document to Markdown/JSO
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
-dependencies = ["openpyxl>=3.1.0"]
+dependencies = ["openpyxl>=3.1.0", "PyMuPDF>=1.24.0"]
 keywords = ["excel", "word", "docx", "markdown", "document-conversion", "enterprise", "ai"]
 classifiers = [
   "Development Status :: 3 - Alpha",
