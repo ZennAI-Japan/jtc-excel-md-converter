@@ -1,6 +1,7 @@
+import subprocess
+import sys
 from pathlib import Path
 
-import pytest
 from openpyxl import Workbook
 from openpyxl.comments import Comment
 from openpyxl.styles import Border, PatternFill, Side
@@ -95,3 +96,46 @@ def test_convert_workbook_renders_specification_markdown_and_review_warnings(tmp
     warnings = result["warnings"]
     assert any("コメント付きセル F5" in warning for warning in warnings)
     assert any("結合セル B2:H2" in warning for warning in warnings)
+
+
+def test_write_outputs_generates_preview_html_and_accuracy_report(tmp_path: Path):
+    source = tmp_path / "jtc.xlsx"
+    out_dir = tmp_path / "out"
+    build_jtc_workbook(source)
+
+    from jtc_excel_md.converter import write_outputs
+
+    result = convert_workbook(source)
+    write_outputs(result, out_dir)
+
+    preview = (out_dir / "preview.html").read_text(encoding="utf-8")
+    assert "JTC Excel Design Preview" in preview
+    assert "画面設計書：ログイン画面" in preview
+    assert "B4:F7" in preview
+    assert 'data-cell="B5"' in preview
+    assert "ユーザーID" in preview
+
+    report = (out_dir / "evaluation.md").read_text(encoding="utf-8")
+    assert "# Conversion Evaluation" in report
+    assert "Sheets: 1" in report
+    assert "Bordered blocks: 1" in report
+    assert "Merged titles: 1" in report
+    assert "Input validations: 1" in report
+    assert "Warnings: 2" in report
+
+
+def test_cli_module_writes_all_outputs(tmp_path: Path):
+    source = tmp_path / "jtc.xlsx"
+    out_dir = tmp_path / "out"
+    build_jtc_workbook(source)
+
+    completed = subprocess.run(
+        [sys.executable, "-m", "jtc_excel_md.cli", str(source), "--out", str(out_dir)],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    for name in ["extracted.json", "specification.md", "warnings.md", "preview.html", "evaluation.md"]:
+        assert (out_dir / name).exists()
+        assert f"wrote: {out_dir / name}" in completed.stdout

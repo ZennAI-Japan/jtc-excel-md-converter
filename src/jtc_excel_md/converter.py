@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import json
+from html import escape
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from openpyxl import load_workbook
 from openpyxl.cell.cell import Cell
@@ -38,6 +39,8 @@ def write_outputs(result: dict[str, Any], output_dir: str | Path) -> None:
         "# Warnings\n\n" + "\n".join(f"- {warning}" for warning in warnings) + "\n",
         encoding="utf-8",
     )
+    (out / "preview.html").write_text(_render_preview_html(result), encoding="utf-8")
+    (out / "evaluation.md").write_text(_render_evaluation(result), encoding="utf-8")
 
 
 def _json_payload(result: dict[str, Any]) -> dict[str, Any]:
@@ -226,3 +229,92 @@ def _render_markdown(sheets: list[dict[str, Any]]) -> str:
 
 def _escape_md(value: str) -> str:
     return value.replace("|", "\\|").replace("\n", "<br>")
+
+
+def _render_preview_html(result: dict[str, Any]) -> str:
+    sections: list[str] = []
+    for sheet in result["sheets"]:
+        sections.append(f"<section><h2>{escape(sheet['name'])}</h2>")
+        for title in sheet["titles"]:
+            sections.append(
+                "<p class=\"title\">"
+                f"<span>{escape(title['range'])}</span>{escape(title['text'])}"
+                "</p>"
+            )
+        for block in sheet["blocks"]:
+            sections.append(f"<h3>{escape(block['range'])}</h3>")
+            sections.append("<table>")
+            sections.append(
+                "<thead><tr>"
+                + "".join(f"<th>{escape(header)}</th>" for header in block["headers"])
+                + "</tr></thead>"
+            )
+            sections.append("<tbody>")
+            headers = block["headers"]
+            cell_coordinates = _block_coordinates(block)
+            for row_index, row in enumerate(block["rows"]):
+                sections.append("<tr>")
+                for col_index, header in enumerate(headers):
+                    coordinate = cell_coordinates[row_index][col_index] if row_index < len(cell_coordinates) else ""
+                    value = row.get(header or f"列{col_index + 1}", "")
+                    sections.append(f'<td data-cell="{escape(coordinate)}">{escape(value)}</td>')
+                sections.append("</tr>")
+            sections.append("</tbody></table>")
+        sections.append("</section>")
+    body = "\n  ".join(sections)
+    return f"""<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>JTC Excel Design Preview</title>
+  <style>
+    body {{ font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif; margin: 32px; color: #172033; }}
+    table {{ border-collapse: collapse; margin: 12px 0 28px; width: 100%; }}
+    th, td {{ border: 1px solid #9aa4b2; padding: 8px 10px; vertical-align: top; }}
+    th {{ background: #eef2f7; text-align: left; }}
+    .title {{ background: #f4f7fb; border-left: 4px solid #315b8c; padding: 10px 12px; }}
+    .title span {{ color: #667085; display: inline-block; margin-right: 12px; font-family: ui-monospace, monospace; }}
+    [data-cell]::before {{ content: attr(data-cell); color: #98a2b3; font-size: 11px; display: block; }}
+  </style>
+</head>
+<body>
+  <h1>JTC Excel Design Preview</h1>
+  <p>Extracted preview for human review. Cell coordinates are shown for traceability.</p>
+  {body}
+</body>
+</html>
+"""
+
+
+def _block_coordinates(block: dict[str, Any]) -> list[list[str]]:
+    bounds = range_boundaries(block["range"])
+    assert all(bound is not None for bound in bounds)
+    min_col, min_row, max_col, max_row = cast(tuple[int, int, int, int], bounds)
+    return [
+        [f"{get_column_letter(col)}{row}" for col in range(min_col, max_col + 1)]
+        for row in range(min_row + 1, max_row + 1)
+    ]
+
+
+def _render_evaluation(result: dict[str, Any]) -> str:
+    sheets = result["sheets"]
+    block_count = sum(len(sheet["blocks"]) for sheet in sheets)
+    title_count = sum(len(sheet["titles"]) for sheet in sheets)
+    validation_count = sum(len(sheet["validations"]) for sheet in sheets)
+    warning_count = len(result.get("warnings", []))
+    return "\n".join(
+        [
+            "# Conversion Evaluation",
+            "",
+            f"- Sheets: {len(sheets)}",
+            f"- Bordered blocks: {block_count}",
+            f"- Merged titles: {title_count}",
+            f"- Input validations: {validation_count}",
+            f"- Warnings: {warning_count}",
+            "",
+            "## Review Notes",
+            "",
+            "Use `warnings.md` to review ambiguous or manually confirmed items before using the Markdown as a downstream specification source.",
+            "",
+        ]
+    )

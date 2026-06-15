@@ -17,3 +17,9 @@ def main() -> None:
     print(f"wrote: {args.out / 'extracted.json'}")
     print(f"wrote: {args.out / 'specification.md'}")
     print(f"wrote: {args.out / 'warnings.md'}")
+    print(f"wrote: {args.out / 'preview.html'}")
+    print(f"wrote: {args.out / 'evaluation.md'}")
+
+
+if __name__ == "__main__":
+    main()
