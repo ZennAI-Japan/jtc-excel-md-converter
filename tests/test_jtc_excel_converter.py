@@ -1,3 +1,4 @@
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -134,6 +135,7 @@ def test_cli_module_writes_all_outputs(tmp_path: Path):
         check=True,
         capture_output=True,
         text=True,
+        env={**os.environ, "PYTHONPATH": str(Path.cwd() / "src")},
     )
 
     for name in ["extracted.json", "specification.md", "warnings.md", "preview.html", "evaluation.md"]:
