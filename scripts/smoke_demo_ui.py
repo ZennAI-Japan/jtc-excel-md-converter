@@ -16,12 +16,15 @@ BANNED_VISIBLE_PHRASES = [
     "安い比較",
     "DEMO-",
     "テスト用",
+    "評価レポート",
+    "評価します",
+    "文書セット評価",
 ]
 REQUIRED_VISIBLE_PHRASES = [
     "設計書ドキュメント化プラットフォーム",
     "関西電力様向け",
     "ローカル解析",
-    "book_specification.md",
+    "Markdownドキュメント",
     "warnings.md",
 ]
 

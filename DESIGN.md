@@ -152,7 +152,7 @@ components:
 
 1. 左: アップロード済みファイルとシート一覧
 2. 中央: 選択シートのプレビューと抽出結果
-3. 右: 統合Markdown、評価レポート、warnings、ダウンロード導線
+3. 右: Markdownドキュメント、warnings、ダウンロード導線
 
 アップロード直後の状態では、ブック全体の変換状況と成果物一覧を上部に表示する。ユーザーが「何ができたか」を先に理解できる構造にする。
 
@@ -169,9 +169,9 @@ components:
 - **Upload panel:** `.xlsx` 1ファイルを明確に受け付ける。機密文書を扱うため、ローカル処理・一時保存方針を短く添える。
 - **Sheet list:** シート名、推定カテゴリ、warnings数を1行で表示する。選択中シートは淡い青背景にする。
 - **Preview table:** Excel由来のセル座標を小さく表示し、元ファイルへの追跡性を示す。
-- **Evaluation cards:** シート数、罫線ブロック数、入力規則数、warnings数を並べる。
+- **Summary cards:** シート数、罫線ブロック数、入力規則数、warnings数を並べる。
 - **Warnings panel:** 未対応・要確認を成功扱いしないための信頼コンポーネント。黄色系で表示し、件数と内容を短く見せる。
-- **Download actions:** `book_specification.md`、`extracted.json`、`preview.html`、`evaluation.md`、ZIPを明確に分ける。
+- **Download actions:** `book_specification.md`、`preview.html`、`warnings.md`、ZIPを明確に分ける。
 
 ## 推奨事項と禁止事項
 

@@ -44,7 +44,8 @@ def test_demo_home_contains_kepco_demo_copy_and_converter_output(tmp_path: Path)
     assert "book_specification.md" in html
     assert "extracted.json" in html
     assert "preview.html" in html
-    assert "evaluation.md" in html
+    assert "evaluation.md" not in html
+    assert "評価レポート" not in html
     assert "warnings.md" in html
     assert "package.zip" in html
     assert "画面設計書" in html
