@@ -1,8 +1,8 @@
 # JTC Excel MD Converter
 
-JTCのドキュメント仕事を終わらせるための、ローカルファーストなOSSツールです。
+Word / Excelで作られた業務文書を、検索・レビュー・AI活用で扱いやすい形式に変換するローカルファーストなOSSツールです。
 
-JTC企業でよく使われるWord / Excelの業務文書を、Markdown・構造化JSON・レビュー用HTMLへ変換します。Excel方眼紙の罫線、結合セル、セル座標、入力規則、コメント、Word文書の見出し・段落・表を、後続の検索・レビュー・AI活用で扱いやすい形式にします。テキストPDFにも対応しています。
+JTC企業でよく使われるWord / Excelの業務文書を、Markdown・構造化JSON・レビュー用HTMLへ変換します。Excel方眼紙に埋もれた罫線、結合セル、セル座標、入力規則、コメント、Word文書の見出し・段落・表を抽出し、後続のナレッジ化や仕様レビューに使いやすくします。テキストPDFにも対応しています。
 
 ![JTC Excel MD Converter の概要](docs/assets/social-preview.png)
 
@@ -15,7 +15,7 @@ JTC企業でよく使われるWord / Excelの業務文書を、Markdown・構造
 - 元文書との対応を確認できる `preview.html` を生成
 - 要確認箇所を `warnings.md` に分離
 - `package.zip` で成果物を一括取得
-- 外部AI連携なしで決定論的に変換
+- 通常変換では外部AI/APIへ文書内容を送信しない
 - DockerでPython環境を作らずに実行
 
 ## デモ動画
@@ -195,9 +195,9 @@ jtc-md-convert examples/jtc_screen_design.xlsx \
   --ai-restructure
 ```
 
-## 公開サンプル文書で評価する
+## 公開サンプルで動作確認する
 
-公開URLから取得できるサンプル文書で、変換処理をまとめて確認できます。
+まず動きを確認したい場合は、公開URLから取得できるサンプル文書で変換を試せます。
 
 ```bash
 python scripts/fetch_public_sample_corpus.py \
@@ -205,23 +205,23 @@ python scripts/fetch_public_sample_corpus.py \
   --out public-sample-evaluation-output
 ```
 
-取得元URL、ファイル名、SHA-256は `public-sample-corpus/manifest.json` に保存されます。評価結果は `public-sample-evaluation-output/evaluation_summary.json`、`evaluation_summary.md`、`evaluation_cases.csv` に出ます。
+取得元URL、ファイル名、SHA-256は `public-sample-corpus/manifest.json` に保存されます。変換結果のサマリーは `public-sample-evaluation-output/evaluation_summary.json`、`evaluation_summary.md`、`evaluation_cases.csv` に出ます。
 
 既定の公開サンプルは、pandasのExcelテスト用ファイル、calibreのDOCXデモ、W3C WAIのPDFテストファイルです。pandas由来のURLは特定commitに固定し、取得済みファイルもSHA-256で検証します。
 
-公開サンプルでの評価は、変換パイプラインの動作確認と品質の簡易確認です。特定組織の文書品質を保証するものではありません。導入判断では、利用可能な模擬文書や利用許可済み文書で追加評価してください。
+ここで確認できるのは、取得・変換・サマリー生成までの一連の処理が動くことです。特定組織の文書で同じ品質を保証するものではありません。導入判断では、利用可能な模擬文書や利用許可済み文書でも確認してください。
 
-詳しくは [公開サンプル文書での評価](docs/public-sample-corpus.md) を参照してください。
+詳しくは [公開サンプルでの動作確認](docs/public-sample-corpus.md) を参照してください。
 
-## 手元の文書セットで評価する
+## 手元の文書セットで確認する
 
-手元のOffice/PDF文書は、リポジトリ外またはGit管理対象外のディレクトリで評価します。
+手元のOffice/PDF文書をまとめて確認する場合は、リポジトリ外またはGit管理対象外のディレクトリに置いて実行します。
 
 ```bash
 python scripts/evaluate_private_corpus.py private-corpus --out private-evaluation-output
 ```
 
-`private-corpus/` と `private-evaluation-output/` は `.gitignore` 済みです。評価サマリーは `evaluation_summary.json`、`evaluation_summary.md`、`evaluation_cases.csv` に出ます。CSV/Markdownにはフルパスを出さず、ケースIDとファイル名だけを残します。
+`private-corpus/` と `private-evaluation-output/` は `.gitignore` 済みです。結果サマリーは `evaluation_summary.json`、`evaluation_summary.md`、`evaluation_cases.csv` に出ます。CSV/Markdownにはフルパスを出さず、ケースIDとファイル名だけを残します。
 
 ## 対象範囲
 
