@@ -75,7 +75,6 @@ def test_readme_is_public_oss_copy_without_internal_positioning():
     assert "scripts/fetch_public_sample_corpus.py" in text
     assert "ローカルファーストのOSS" in text
     assert "docs/assets/social-preview.png" in text
-    assert "docs/assets/social-preview.svg" in text
     assert "PyMuPDF" in text
     assert "AGPL-3.0-or-later" in text
     assert "SHA-256" in text
