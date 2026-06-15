@@ -57,15 +57,27 @@ E5:E7  テキスト / パスワード / チェックボックス / ラジオ
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install -e '.[dev]'
-python -m pytest -q
+pip install -e .
 jtc-md-convert examples/jtc_screen_design.xlsx --out outputs/jtc_screen_design
 ```
 
-Word / PDFファイルも同じコマンドで実行できます。
+開発時にテストも実行する場合は、開発用extraを入れます。
+
+```bash
+pip install -e '.[dev]'
+python -m pytest -q
+```
+
+Wordファイルも同じコマンドで実行できます。
 
 ```bash
 jtc-md-convert path/to/design.docx --out outputs/word_design
+```
+
+PDF対応は `PyMuPDF` を使うため任意extraに分けています。PDFを変換する場合だけ、次のように入れてください。
+
+```bash
+pip install -e '.[pdf]'
 jtc-md-convert path/to/design.pdf --out outputs/pdf_design
 ```
 
@@ -236,4 +248,6 @@ python scripts/smoke_demo_ui.py
 
 このリポジトリ本体は MIT License です。
 
-主な依存関係は `openpyxl` と `PyMuPDF` です。`openpyxl` は MIT License、`PyMuPDF` は AGPL-3.0-or-later または商用ライセンスのデュアルライセンスです。配布・組み込み・商用利用の条件は利用形態により変わるため、PDF対応を含めて再配布する場合は `NOTICE.md` と各プロジェクトのライセンスを確認してください。
+主な依存関係は `openpyxl` です。PDF対応は任意extraの `pdf` に分けており、`pip install -e '.[pdf]'` または `pip install 'jtc-excel-md-converter[pdf]'` を実行した場合だけ `PyMuPDF` が入ります。
+
+`openpyxl` は MIT License、`PyMuPDF` は AGPL-3.0-or-later または商用ライセンスのデュアルライセンスです。配布・組み込み・商用利用の条件は利用形態により変わるため、PDF対応を含めて再配布する場合は `NOTICE.md` と各プロジェクトのライセンスを確認してください。

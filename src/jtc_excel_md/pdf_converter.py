@@ -15,7 +15,11 @@ MAX_PAGES = 200
 def convert_pdf_document(path: str | Path) -> dict[str, Any]:
     pdf_path = Path(path)
     if pymupdf is None:
-        raise RuntimeError("PDF support requires PyMuPDF. Install with `pip install -e .` or `pip install PyMuPDF`.")
+        raise RuntimeError(
+            "PDF support requires the optional `pdf` extra. "
+            "Install with `pip install 'jtc-excel-md-converter[pdf]'`, "
+            "`pip install -e '.[pdf]'`, or use `pip install -e '.[dev]'` for development."
+        )
     if pdf_path.stat().st_size > MAX_PDF_BYTES:
         raise ValueError("PDF file is too large to parse safely")
 

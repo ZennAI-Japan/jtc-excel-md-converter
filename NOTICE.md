@@ -7,12 +7,12 @@
 | 依存関係 | 用途 | ライセンス上の注意 |
 | --- | --- | --- |
 | openpyxl | Excel `.xlsx` の読み取り | MIT License |
-| PyMuPDF | テキストPDFの読み取り | AGPL-3.0-or-later または商用ライセンス |
+| PyMuPDF | テキストPDFの読み取り。任意extra `pdf` を入れた場合のみ利用 | AGPL-3.0-or-later または商用ライセンス |
 | pytest | 開発時テスト | MIT License |
 
 ## PyMuPDF について
 
-PDF対応は PyMuPDF に依存しています。PyMuPDF は AGPL-3.0-or-later と商用ライセンスのデュアルライセンスです。
+PDF対応は任意extra `pdf` の PyMuPDF に依存しています。PyMuPDF は AGPL-3.0-or-later と商用ライセンスのデュアルライセンスです。
 
 このため、PDF対応を含めた配布、組み込み、SaaS提供、社内外への再配布を行う場合は、利用形態が PyMuPDF のライセンス条件に合うか確認してください。必要に応じて商用ライセンスの利用、PDF機能の分離、または別PDFバックエンドへの差し替えを検討してください。
 
