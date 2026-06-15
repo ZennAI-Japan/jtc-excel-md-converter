@@ -23,7 +23,9 @@
 
 - `.env.example` documents provider settings.
 - `src/jtc_excel_md/ai_config.py` loads and sanitizes provider settings without importing vendor SDKs.
+- `src/jtc_excel_md/ai_providers.py` defines the optional provider adapter interface and OpenAI-compatible request builder without making network calls from the converter.
 - `tests/test_ai_config.py` verifies generic, provider-specific, file-based, and local no-key configuration.
+- `tests/test_ai_providers.py` verifies disabled-provider behavior, secret-safe request metadata, and injected HTTP-boundary handling.
 - `.gitignore` excludes `.env` and `.env.*` while keeping `.env.example` tracked.
 - `CONTRIBUTING.md`, `SECURITY.md`, and `LICENSE` establish initial OSS hygiene.
 
