@@ -1,8 +1,0 @@
-Metadata-Version: 2.4
-Name: jtc-excel-md-converter
-Version: 0.1.0
-Summary: JTC-style Excel design document to Markdown/JSON converter prototype
-Requires-Python: >=3.10
-Requires-Dist: openpyxl>=3.1.0
-Provides-Extra: dev
-Requires-Dist: pytest>=8.0; extra == "dev"

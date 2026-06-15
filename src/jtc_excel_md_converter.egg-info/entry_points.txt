@@ -1,2 +1,0 @@
-[console_scripts]
-jtc-md-convert = jtc_excel_md.cli:main
