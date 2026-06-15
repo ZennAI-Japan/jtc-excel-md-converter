@@ -30,6 +30,8 @@ Excel方眼紙の罫線、結合セル、セル座標、入力規則、コメン
 
 ## 変換例
 
+詳しいBefore/Afterは [Before / After サンプル](docs/before-after-sample.md) にまとめています。
+
 入力側のExcel設計書では、罫線・結合セル・入力規則・セル座標に仕様情報が入っていることがあります。
 
 ```text
