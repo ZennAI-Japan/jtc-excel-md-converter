@@ -51,10 +51,10 @@ def test_user_facing_documentation_is_japanese_first():
             assert phrase not in text, f"{path} still contains English docs phrase: {phrase}"
 
 
-def test_readme_embeds_zundamon_demo_video():
+def test_readme_embeds_demo_video():
     text = Path("README.md").read_text(encoding="utf-8")
     assert "docs/assets/demo-zundamon.mp4" in text
-    assert "ずんだもん" in text
+    assert "デモ動画" in text
     assert Path("docs/assets/demo-zundamon.mp4").exists()
 
 
