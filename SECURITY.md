@@ -1,31 +1,31 @@
-# Security Policy
+# セキュリティポリシー
 
-## Supported versions
+## 対応バージョン
 
-This project is currently in MVP stage. Security fixes should target the default branch and the active release branch when one exists.
+このプロジェクトは現在MVP段階です。セキュリティ修正は、既定ブランチと有効なリリースブランチがある場合はその両方を対象にします。
 
-## Reporting a vulnerability
+## 脆弱性の報告
 
-Please do not disclose security issues publicly before maintainers have had time to assess them.
+保守者が確認する前に、セキュリティ問題を公開しないでください。
 
-For now, report suspected vulnerabilities to the maintainers through a private GitHub security advisory or a private maintainer contact channel. When the repository is made public, enable GitHub private vulnerability reporting before announcing it broadly.
+現時点では、GitHubの非公開セキュリティアドバイザリ、または保守者の非公開連絡経路で報告してください。リポジトリを公開する前に、GitHubの非公開脆弱性報告を有効化します。
 
-## Credential handling
+## 認証情報の扱い
 
-- Never commit `.env`, API keys, tokens, customer files, or private enterprise documents.
-- `.env.example` must contain placeholders only.
-- The converter must run without AI credentials by default.
-- AI provider settings must be explicit and user-controlled.
-- Local providers such as Ollama / LM Studio should be usable without API keys when running on the user's machine.
+- `.env`、APIキー、トークン、顧客ファイル、非公開の企業文書をコミットしない。
+- `.env.example` にはプレースホルダだけを書く。
+- 変換器は既定でAI認証情報なしに動作する。
+- AIプロバイダ設定は明示的かつ利用者管理にする。
+- Ollama / LM Studio などのローカルプロバイダは、利用者の環境でAPIキーなしに使えるようにする。
 
-## Document privacy
+## 文書プライバシー
 
-Enterprise Word/Excel documents may contain confidential information. The default behavior should keep document contents local. Any future feature that sends content to a remote AI provider must clearly show the provider, base URL, model, and opt-in configuration path.
+企業の Word / Excel 文書には機密情報が含まれる場合があります。既定では文書内容をローカルに保持します。将来、外部AIプロバイダへ内容を送る機能を追加する場合は、プロバイダ、ベースURL、モデル、明示的なオプトイン設定経路を必ず表示します。
 
-## Maintainer checklist before public release
+## 公開前の保守者チェック
 
-- Confirm repository visibility can be public.
-- Confirm no customer documents, private screenshots, tokens, or generated outputs are committed.
-- Enable GitHub private vulnerability reporting.
-- Add package publishing credentials only as GitHub Actions secrets, never as repo files.
-- Run the full verification gate from `CONTRIBUTING.md`.
+- リポジトリを公開してよいことを確認する。
+- 顧客文書、非公開スクリーンショット、トークン、生成済み成果物がコミットされていないことを確認する。
+- GitHubの非公開脆弱性報告を有効化する。
+- パッケージ公開用の認証情報はGitHub Actions secretsにだけ登録し、リポジトリファイルには置かない。
+- `CONTRIBUTING.md` の検証ゲートを実行する。

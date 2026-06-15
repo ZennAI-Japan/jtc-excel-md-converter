@@ -1,16 +1,16 @@
 # 関西電力様向けデモアプリ実装計画
 
-> **For Hermes / Codex:** この計画は `DESIGN.md` と `docs/design/kepco-demo-app-mockup.png` を正とし、TDDで小さく実装する。営業デモで見せる画面には内部メモ、開発都合、ミラ口調、安い比較訴求を出さない。
+> **Hermes / Codex向け:** この計画は `DESIGN.md` と `docs/design/kepco-demo-app-mockup.png` を正とし、TDDで小さく実装する。営業デモで見せる画面には内部メモ、開発都合、ミラ口調、安い比較訴求を出さない。
 
-**Goal:** 複数シートExcel設計書をアップロードし、Markdown / JSON / HTML Preview / 評価レポート / warnings を確認・ダウンロードできる、関西電力様向けの最小デモアプリを作る。
+**目的:** 複数シートExcel設計書をアップロードし、Markdown / JSON / HTMLプレビュー / 評価レポート / warnings を確認・ダウンロードできる、関西電力様向けの最小デモアプリを作る。
 
-**Architecture:** 既存のPython変換CLIをドメイン中核として維持し、最初はローカル実行のWeb UIを薄く載せる。UIは `DESIGN.md` のトークンを使い、変換成果物は既存converterの出力をそのまま参照する。外部LLM/API送信は初期デモでは行わない。
+**アーキテクチャ:** 既存のPython変換CLIをドメイン中核として維持し、最初はローカル実行のWeb UIを薄く載せる。UIは `DESIGN.md` のトークンを使い、変換成果物は既存converterの出力をそのまま参照する。外部LLM/API送信は初期デモでは行わない。
 
-**Tech Stack:** Python 3.10+, openpyxl, pytest, 標準ライブラリHTTP or 最小FastAPI系Web層（導入する場合は別PRで依存追加を明示）, Playwright screenshot smoke.
+**技術スタック:** Python 3.10+, openpyxl, pytest, 標準ライブラリHTTP or 最小FastAPI系Web層（導入する場合は別PRで依存追加を明示）, Playwright相当の画面スモーク.
 
 ---
 
-## Acceptance Criteria
+## 受入条件
 
 1. `.xlsx` を1ファイル指定して変換できる。
 2. ブック全体成果物として `book_specification.md` を表示できる。
@@ -26,7 +26,7 @@
 7. 初期デモでは外部LLM/APIへ文書内容を送信しない。
 8. 変換できない/不確実な要素は warnings として明示する。
 
-## Source of Truth
+## 正とする資料
 
 - 要件: `docs/2026-06-15-demo-app-requirements.md`
 - デザインシステム: `DESIGN.md`
@@ -36,15 +36,15 @@
 - CLI: `src/jtc_excel_md/cli.py`
 - 既存テスト: `tests/test_jtc_excel_converter.py`
 
-## Task 1: converter出力契約を固定する
+## タスク 1: converter出力契約を固定する
 
-**Objective:** Web UIが参照する成果物名とwarnings契約をテストで固定する。
+**狙い:** Web UIが参照する成果物名とwarnings契約をテストで固定する。
 
-**Files:**
+**対象ファイル:**
 - Modify: `tests/test_jtc_excel_converter.py`
 - Modify if needed: `src/jtc_excel_md/converter.py`
 
-**Step 1: Write failing test**
+**手順1: 失敗するテストを書く**
 
 既存テストに、出力ディレクトリへ最低限以下が生成されることを確認するテストを追加する。
 
@@ -62,34 +62,34 @@ def test_converter_outputs_demo_artifact_contract(tmp_path):
     assert expected <= {p.name for p in output_dir.iterdir()}
 ```
 
-**Step 2: Run RED**
+**手順2: REDを確認する**
 
 ```bash
 python -m pytest tests/test_jtc_excel_converter.py::test_converter_outputs_demo_artifact_contract -q
 ```
 
-Expected: まだ契約が足りなければFAIL。
+期待結果: まだ契約が足りなければFAIL。
 
-**Step 3: Implement minimal GREEN**
+**手順3: 最小実装でGREENにする**
 
 不足している成果物だけを `converter.py` に追加する。既存出力がある場合は名前と内容をUI契約に合わせる。
 
-**Step 4: Verify**
+**手順4: 検証する**
 
 ```bash
 python -m pytest tests/test_jtc_excel_converter.py -q
 ```
 
-## Task 2: 顧客向けコピー監査を追加する
+## タスク 2: 顧客向けコピー監査を追加する
 
-**Objective:** 営業デモ画面・成果物に不要な内部表現が混ざらないようにする。
+**狙い:** 営業デモ画面・成果物に不要な内部表現が混ざらないようにする。
 
-**Files:**
+**対象ファイル:**
 - Create: `tests/test_customer_facing_copy.py`
 - Read: `DESIGN.md`
 - Read: `docs/design/kepco-demo-app-mockup.html`
 
-**Step 1: Write failing/guard test**
+**手順1: 失敗またはガード用のテストを書く**
 
 ```python
 from pathlib import Path
@@ -116,25 +116,25 @@ def test_customer_facing_copy_has_no_banned_phrases():
             assert phrase not in text, f"{path}: {phrase}"
 ```
 
-**Important:** `DESIGN.md` のDon'tsには禁止語を説明目的で含むため、実装時は「画面HTML・将来のappテンプレート・出力HTML」を対象にするなど、監査対象を顧客表示ファイルへ限定する。
+**重要:** `DESIGN.md` の禁止事項には禁止語を説明目的で含むため、実装時は「画面HTML・将来のappテンプレート・出力HTML」を対象にするなど、監査対象を顧客表示ファイルへ限定する。
 
-**Step 2: Run RED/GREEN**
+**手順2: RED/GREENを確認する**
 
 ```bash
 python -m pytest tests/test_customer_facing_copy.py -q
 ```
 
-## Task 3: Web UIの最小ルートを作る
+## タスク 3: Web UIの最小ルートを作る
 
-**Objective:** ローカルブラウザでデモ画面を開けるようにする。
+**狙い:** ローカルブラウザでデモ画面を開けるようにする。
 
-**Files:**
+**対象ファイル:**
 - Create: `src/jtc_excel_md/web_app.py` or `src/jtc_excel_md/demo_server.py`
 - Create: `src/jtc_excel_md/web_assets/` if needed
 - Modify: `pyproject.toml`
 - Test: `tests/test_demo_server.py`
 
-**Step 1: Write failing test**
+**手順1: 失敗するテストを書く**
 
 標準ライブラリまたは選定したWeb frameworkのテストクライアントで `/` が200を返し、主要文言を含むことを確認する。
 
@@ -148,32 +148,32 @@ def test_demo_home_contains_kepco_demo_copy():
     assert "ローカル解析" in body
 ```
 
-**Step 2: Run RED**
+**手順2: REDを確認する**
 
 ```bash
 python -m pytest tests/test_demo_server.py -q
 ```
 
-**Step 3: Implement minimal GREEN**
+**手順3: 最小実装でGREENにする**
 
 `docs/design/kepco-demo-app-mockup.html` をベースに、アプリテンプレートへ移す。最初はサンプルデータ固定でよい。ただし画面内には「サンプル」という目立つデモ都合表現を出しすぎない。
 
-**Step 4: Verify**
+**手順4: 検証する**
 
 ```bash
 python -m pytest tests/test_demo_server.py tests/test_customer_facing_copy.py -q
 ```
 
-## Task 4: サンプルExcelの変換結果を画面へ接続する
+## タスク 4: サンプルExcelの変換結果を画面へ接続する
 
-**Objective:** 固定UIではなく、既存converterの実出力を画面表示へつなぐ。
+**狙い:** 固定UIではなく、既存converterの実出力を画面表示へつなぐ。
 
-**Files:**
+**対象ファイル:**
 - Modify: `src/jtc_excel_md/web_app.py` or `src/jtc_excel_md/demo_server.py`
 - Modify: `tests/test_demo_server.py`
 - Use: `examples/jtc_screen_design.xlsx`
 
-**Step 1: Write failing test**
+**手順1: 失敗するテストを書く**
 
 `examples/jtc_screen_design.xlsx` を変換し、画面本文に実際の成果物名・warnings件数・シート名が出ることを確認する。
 
@@ -187,32 +187,32 @@ def test_demo_home_uses_converter_output(tmp_path):
     assert "画面" in body
 ```
 
-**Step 2: Run RED**
+**手順2: REDを確認する**
 
 ```bash
 python -m pytest tests/test_demo_server.py::test_demo_home_uses_converter_output -q
 ```
 
-**Step 3: Implement minimal GREEN**
+**手順3: 最小実装でGREENにする**
 
 Web層はconverterの結果を読むだけにする。変換ロジックをWeb層へ複製しない。
 
-**Step 4: Verify**
+**手順4: 検証する**
 
 ```bash
 python -m pytest -q
 ```
 
-## Task 5: Playwright screenshot smokeを追加する
+## タスク 5: Playwright相当の画面スモークを追加する
 
-**Objective:** 画面崩れと禁止文言を画像・レンダリングで検出する。
+**狙い:** 画面崩れと禁止文言を画像・レンダリングで検出する。
 
-**Files:**
+**対象ファイル:**
 - Create: `scripts/render_demo_screenshot.py` or `scripts/smoke_demo_ui.py`
 - Modify: `pyproject.toml` scripts if needed
 - Output: `outputs/demo-ui-smoke.png` or `docs/design/kepco-demo-app-runtime.png`
 
-**Step 1: Create smoke script**
+**手順1: スモークスクリプトを作る**
 
 PlaywrightでローカルURLを開き、以下を確認する。
 
@@ -221,22 +221,22 @@ PlaywrightでローカルURLを開き、以下を確認する。
 - 主要見出しが表示される
 - 禁止文言が表示されない
 
-**Step 2: Verify**
+**手順2: 検証する**
 
 ```bash
 python scripts/smoke_demo_ui.py
 ```
 
-Expected: screenshot path and layout metricsを出力し、exit 0。
+期待結果: スクリーンショットのパスとレイアウト指標を出力し、exit 0。
 
-## Task 6: READMEにローカル試用手順を追加する
+## タスク 6: READMEにローカル試用手順を追加する
 
-**Objective:** ご主人や営業メンバーが同じデモを再現できるようにする。
+**狙い:** ご主人や営業メンバーが同じデモを再現できるようにする。
 
-**Files:**
+**対象ファイル:**
 - Modify: `README.md`
 
-**Content requirements:**
+**記載要件:**
 
 ```bash
 python -m venv .venv
@@ -247,13 +247,13 @@ jtc-md-convert examples/jtc_screen_design.xlsx --output outputs/demo
 # Web UI起動コマンドは実装後に記載
 ```
 
-**Verify:**
+**検証:**
 
 ```bash
 python -m pytest -q
 ```
 
-## Final Verification Gate
+## 最終検証ゲート
 
 実装完了を報告する前に必ず実行する。
 

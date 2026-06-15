@@ -25,6 +25,7 @@ Issues = "https://github.com/ZennAI-Japan/jtc-excel-md-converter/issues"
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
+video = ["pillow>=10.0"]
 
 [project.scripts]
 jtc-md-convert = "jtc_excel_md.cli:main"

@@ -1,19 +1,35 @@
 # JTC Excel MD Converter
 
-Local-first open source toolkit for converting Japanese enterprise Excel/Word design documents into Markdown, structured JSON, and reviewable artifacts.
+日本企業で長く使われてきた Word / Excel 設計書を、Markdown・構造化JSON・レビュー用HTMLへ変換するローカルファーストのOSSです。
 
-The deterministic converter works without AI credentials. Optional AI-assisted restructuring is designed as bring-your-own-AI: users can configure their own hosted API, OpenAI-compatible gateway, or local model runtime without committing keys to the repository.
+汎用変換だけでは落ちやすい、Excel方眼紙の罫線、結合セル、セル座標、入力規則、コメント、Word文書の見出し・段落・表を、AIが読みやすく人間が確認しやすい成果物として残します。
 
-This MVP focuses on preserving information that generic spreadsheet-to-Markdown tools often lose:
+## できること
 
-- bordered regions as semantic blocks
-- merged-cell titles and section labels
-- cell coordinates
-- data validation / dropdown options
-- comments and warning output for human review
-- Word `.docx` paragraphs/headings/tables as deterministic Markdown/JSON
+- Excel設計書をブック単位でMarkdown化
+- Word `.docx` をMarkdown / JSON化
+- 変換結果の根拠を確認できる `preview.html` を生成
+- 要確認箇所を `warnings.md` に分離
+- `package.zip` で成果物を一括取得
+- AI連携は任意。未設定でも決定論的な変換は動作
+- DockerでPython環境を作らずに実行可能
 
-## Quick start
+## ずんだもん音声つきデモ動画
+
+<video controls src="docs/assets/demo-zundamon.mp4" title="JTC Excel MD Converter ずんだもんデモ"></video>
+
+動画が表示されない場合は、こちらを直接開いてください。
+
+[ずんだもんデモ動画を開く](docs/assets/demo-zundamon.mp4)
+
+再生成する場合は、VOICEVOX Engineを `http://127.0.0.1:50021` で起動し、`ffmpeg` / `ffprobe` と `pillow` を使える状態で次を実行します。
+
+```bash
+pip install -e '.[video]'
+python scripts/create_zundamon_demo_video.py
+```
+
+## ローカル実行
 
 ```bash
 python -m venv .venv
@@ -21,23 +37,27 @@ source .venv/bin/activate
 pip install -e '.[dev]'
 python -m pytest -q
 jtc-md-convert examples/jtc_screen_design.xlsx --out outputs/jtc_screen_design
-# Word .docx files use the same artifact contract:
-# jtc-md-convert path/to/design.docx --out outputs/word_design
 ```
 
-Generated files:
+Wordファイルも同じコマンドで実行できます。
 
-- `extracted.json` — structured sheet/block/cell data
-- `book_specification.md` — workbook-level Markdown specification
-- `specification.md` — backward-compatible Markdown filename
-- `warnings.md` — items requiring review
-- `preview.html` — cell-coordinate review preview
-- `evaluation.md` — conversion summary
-- `package.zip` — downloadable artifact bundle
+```bash
+jtc-md-convert path/to/design.docx --out outputs/word_design
+```
 
-## Docker quick start
+生成される主なファイルは以下です。
 
-Use Docker when you want a reproducible runtime without creating a local Python virtual environment:
+- `extracted.json`: 抽出した構造化データ
+- `book_specification.md`: 統合Markdown仕様書
+- `specification.md`: 互換用のMarkdownファイル名
+- `warnings.md`: 人間レビューが必要な項目
+- `preview.html`: 元文書との対応を確認するHTML
+- `evaluation.md`: 変換結果の概要
+- `package.zip`: 成果物一式
+
+## Docker実行
+
+Python環境を作らずに試す場合はDockerを使います。
 
 ```bash
 docker build -t jtc-excel-md-converter:local .
@@ -51,40 +71,37 @@ docker run --rm \
   examples/jtc_screen_design.xlsx --out outputs/docker-smoke
 ```
 
-Or run the included Compose smoke command:
+Composeでも実行できます。
 
 ```bash
 docker compose run --rm jtc-md-converter
 ```
 
-Compose uses `${UID:-1000}:${GID:-1000}` so Linux bind-mounted `outputs/` files are written as your host user. If your Linux UID/GID is not `1000:1000`, run `UID=$(id -u) GID=$(id -g) docker compose run --rm jtc-md-converter`. On Windows, run from WSL/Git Bash or adapt the `docker run --user` flag to your shell.
+LinuxでUID/GIDが `1000:1000` ではない場合は、次のように指定してください。
 
-A full Docker smoke script is also available:
+```bash
+UID=$(id -u) GID=$(id -g) docker compose run --rm jtc-md-converter
+```
+
+WindowsではWSLまたはGit Bashでの実行を推奨します。必要に応じて `docker run --user` の指定を利用環境に合わせてください。
+
+Dockerの実行確認スクリプトもあります。
 
 ```bash
 scripts/docker_smoke.sh
 ```
 
-## AI provider configuration
+## AIプロバイダ設定
 
-Copy the template and fill only the provider you want to use:
+AI支援は任意です。初期状態では外部APIへ文書内容を送りません。
+
+設定する場合は `.env.example` をコピーします。
 
 ```bash
 cp .env.example .env
 ```
 
-The current configuration contract supports:
-
-- `codex` — recommended initial hosted API mode using OpenAI credentials
-- `openai`
-- `anthropic`
-- `google`
-- `openai-compatible`
-- `ollama`
-- `lmstudio`
-- `local`
-
-Codex-first hosted API example:
+現在の推奨初期設定はCodexです。
 
 ```text
 JTC_AI_PROVIDER=codex
@@ -93,7 +110,7 @@ JTC_AI_BASE_URL=https://api.openai.com/v1
 JTC_AI_MODEL=codex-mini-latest
 ```
 
-Generic OpenAI-compatible or local gateway example:
+ローカルまたはOpenAI互換エンドポイントも利用できます。
 
 ```text
 JTC_AI_PROVIDER=openai-compatible
@@ -102,9 +119,18 @@ JTC_AI_BASE_URL=http://127.0.0.1:11434/v1
 JTC_AI_MODEL=qwen2.5-coder:7b
 ```
 
-Provider-specific alternatives such as `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, and `GOOGLE_API_KEY` are also supported by the config loader. The repository ignores `.env` and `.env.*`; keep real API keys local.
+対応予定を含むプロバイダ値は以下です。
 
-To include a secret-masked AI configuration summary in the conversion artifacts:
+- `codex`
+- `openai`
+- `anthropic`
+- `google`
+- `openai-compatible`
+- `ollama`
+- `lmstudio`
+- `local`
+
+変換成果物にAI設定の安全な概要を含める場合は、次のように実行します。
 
 ```bash
 jtc-md-convert examples/jtc_screen_design.xlsx \
@@ -113,32 +139,32 @@ jtc-md-convert examples/jtc_screen_design.xlsx \
   --show-ai-config
 ```
 
-The CLI records provider/model, a sanitized base URL (scheme + host + path only), and whether an API key is configured, but it does not write raw or key-derived API key text to `extracted.json`, `evaluation.md`, stdout, or the artifact ZIP. Raw API keys stay local.
+出力にはプロバイダ名、モデル名、安全化したベースURL、APIキー設定有無だけを記録します。生のAPIキーやキーの一部は `extracted.json`、`evaluation.md`、標準出力、ZIPへ書き込みません。
 
-## Local demo UI
+## ローカルデモUI
 
-Run the KEPCO-oriented local demo UI:
+関西電力様向けのローカルデモUIを起動します。
 
 ```bash
 jtc-md-demo examples/jtc_screen_design.xlsx --out outputs/demo-app --port 8765
 ```
 
-Open:
+ブラウザで以下を開きます。
 
 ```text
 http://127.0.0.1:8765/
 ```
 
-The initial demo runs locally and does not send document content to external LLM/API services.
-It shows the sheet list, extracted preview, workbook-level Markdown artifact, structured JSON,
-review HTML, evaluation report, warnings, and ZIP download route.
+初期デモはローカル処理のみで、外部LLM/APIへ文書内容を送信しません。シート一覧、抽出プレビュー、統合Markdown、構造化JSON、レビューHTML、評価レポート、warnings、ZIPダウンロード導線を確認できます。
 
-Smoke-test the rendered UI and capture a screenshot:
+画面スモークテストは以下です。
 
 ```bash
 python scripts/smoke_demo_ui.py
 ```
 
-## Scope
+## 対象範囲
 
-This is not a generic Excel renderer. It is a PoC baseline for reverse-engineering JTC-style system design documents that use Excel as a layout canvas.
+このツールは汎用Excelレンダラーではありません。Excelをレイアウトキャンバスとして使ったJTC式システム設計書を、レビュー可能な仕様書・AI投入用データへ変換するためのPoC基盤です。
+
+現時点ではMVPです。画像、図形、テキストボックス、PDF、実Codex整形実行、大量実文書評価は次フェーズです。

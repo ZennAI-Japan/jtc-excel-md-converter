@@ -1,107 +1,112 @@
-# OSS + Bring-Your-Own-AI Roadmap
+# OSS / BYOK AI ロードマップ
 
-> **For Hermes / Codex:** Make the project useful as open source software without weakening document privacy. The converter must stay deterministic by default. AI features are optional, explicit, and configured by the user's own provider/API key.
+> **Hermes / Codex向けメモ:** 文書プライバシーを弱めず、OSSとして使える状態を目指す。変換器は既定で決定論的に動作する。AI機能は任意・明示的・利用者自身のプロバイダ/APIキー設定に限定する。
 
-**Goal:** Let any user run the converter locally for Excel/Word enterprise documents and optionally connect their own AI provider, including hosted APIs and local OpenAI-compatible endpoints.
+## 目的
 
-**Architecture:** Keep `converter.py` as the deterministic extraction core. Add AI as a separate optional layer that receives explicit artifacts and returns reviewable Markdown/restructure suggestions. Do not make AI calls from the core converter or local demo unless the user has opted in through config.
+利用者が Excel / Word の企業文書をローカルで変換でき、必要な場合だけ自分のAIプロバイダを接続できる状態にする。対象はホスト型API、OpenAI互換エンドポイント、Ollama / LM Studio などのローカル実行環境を含む。
 
-**Tech Stack:** Python 3.10+, openpyxl, stdlib env parsing, optional future provider adapters, pytest, Playwright smoke.
+## アーキテクチャ
 
----
+`converter.py` を決定論的な抽出中核として維持する。AIは別レイヤーに分離し、明示的な成果物を入力として、レビュー可能なMarkdown再構成案を返す。利用者が設定で選んでいない限り、中核変換器やローカルデモからAI呼び出しを行わない。
 
-## Principles
+## 技術スタック
 
-1. **Local-first:** Word/Excel documents stay on the user's machine by default.
-2. **Bring your own AI:** Users configure their own OpenAI, Anthropic, Google Gemini, OpenAI-compatible, Ollama, LM Studio, or local gateway settings.
-3. **No hardcoded credentials:** Examples and tests must never contain real keys.
-4. **Deterministic baseline:** The converter must work without an AI provider.
-5. **Reviewable outputs:** AI output should be suggestions or generated artifacts with warnings/evidence, not silent mutation.
-6. **Vendor-neutral:** Provider adapters should share a small internal interface.
+Python 3.10+、openpyxl、標準ライブラリのenv解析、将来の任意プロバイダアダプタ、pytest、画面スモーク。
 
-## Current foundation in this PR
+## 原則
 
-- `.env.example` documents provider settings, with `codex` as the recommended initial hosted API mode.
-- `src/jtc_excel_md/ai_config.py` loads and sanitizes provider settings without importing vendor SDKs.
-- `src/jtc_excel_md/word_converter.py` adds deterministic `.docx` heading/paragraph/table extraction into the same artifact contract.
-- `src/jtc_excel_md/ai_providers.py` defines the optional provider adapter interface and OpenAI-compatible request builder without making network calls from the converter.
-- `tests/test_ai_config.py` verifies generic, provider-specific, Codex-first, file-based, and local no-key configuration.
-- `tests/test_ai_providers.py` verifies disabled-provider behavior, secret-safe request metadata, and injected HTTP-boundary handling.
-- `tests/test_word_converter.py` verifies `.docx` extraction and CLI artifact generation.
-- `Dockerfile`, `compose.yaml`, and `scripts/docker_smoke.sh` provide a reproducible Docker CLI runtime for local conversion.
-- `.gitignore` excludes `.env` and `.env.*` while keeping `.env.example` tracked.
-- `CONTRIBUTING.md`, `SECURITY.md`, and `LICENSE` establish initial OSS hygiene.
+1. ローカルファースト: Word / Excel 文書は既定で利用者の端末内に留める。
+2. BYOK AI: OpenAI、Anthropic、Google Gemini、OpenAI互換、Ollama、LM Studio、ローカルgatewayを利用者が設定する。
+3. 認証情報を直書きしない: 例やテストに実キーを含めない。
+4. 決定論的な基盤: AIプロバイダなしでも変換器が動く。
+5. レビュー可能な出力: AI出力は警告・根拠つきの成果物として扱い、黙って既存成果物を書き換えない。
+6. ベンダーニュートラル: プロバイダアダプタは小さな内部インターフェースを共有する。
 
-## Task 1: Provider adapter interface
+## このPRで入った基盤
 
-**Objective:** Add a vendor-neutral adapter interface without making network calls from the converter.
+- `.env.example` にプロバイダ設定を記載し、初期推奨を `codex` にした。
+- `src/jtc_excel_md/ai_config.py` が、SDKに依存せず設定を読み込み、安全化する。
+- `src/jtc_excel_md/word_converter.py` が、`.docx` の見出し・段落・表を同じ成果物契約へ抽出する。
+- `src/jtc_excel_md/ai_providers.py` が、任意AIプロバイダのインターフェースとOpenAI互換リクエスト生成を定義する。
+- `tests/test_ai_config.py` が、汎用・プロバイダ別・Codex初期・ファイル読み込み・ローカルno-key設定を検証する。
+- `tests/test_ai_providers.py` が、無効プロバイダ、secret-safeなリクエスト情報、注入HTTP境界を検証する。
+- `tests/test_word_converter.py` が、`.docx` 抽出とCLI成果物生成を検証する。
+- `Dockerfile`、`compose.yaml`、`scripts/docker_smoke.sh` が、Docker CLI実行環境を提供する。
+- `.gitignore` が `.env` と `.env.*` を除外し、`.env.example` を追跡対象に残す。
+- `CONTRIBUTING.md`、`SECURITY.md`、`LICENSE` がOSS公開に必要な最低限の衛生面を整える。
+- READMEと主要ドキュメントを日本語化し、ずんだもん音声つきデモ動画を追加する。
 
-**Files:**
+## タスク1: プロバイダアダプタ
 
-- Create: `src/jtc_excel_md/ai_providers.py`
-- Test: `tests/test_ai_providers.py`
+目的: 変換中核からネットワーク呼び出しを行わず、ベンダーニュートラルなアダプタを追加する。
 
-**Acceptance:**
+対象:
 
-- Define an `AIProvider` protocol or base class with a method such as `rewrite_specification(prompt: str) -> AIResponse`.
-- Factory returns disabled provider when `AIConfig.enabled` is false.
-- Factory supports `openai-compatible` by preparing request metadata but tests mock the HTTP boundary.
+- `src/jtc_excel_md/ai_providers.py`
+- `tests/test_ai_providers.py`
 
-## Task 2: AI-assisted restructuring command
+受入条件:
 
-**Objective:** Add a separate command that can use the configured provider on already-generated artifacts.
+- `rewrite_specification(prompt: str) -> AIResponse` 相当の小さなインターフェースを定義する。
+- `AIConfig.enabled` がfalseの場合は無効プロバイダを返す。
+- `openai-compatible` はリクエスト情報を準備し、テストではHTTP境界をmockする。
 
-**Files:**
+## タスク2: AI支援再構成コマンド
 
-- Create: `src/jtc_excel_md/ai_restructure.py`
-- Modify: `pyproject.toml`
-- Test: `tests/test_ai_restructure.py`
+目的: すでに生成済みの成果物に対し、設定済みプロバイダを使える別コマンドを追加する。
 
-**Acceptance:**
+対象:
 
-- New command reads `book_specification.md` and `extracted.json` from an output directory.
-- Without provider config, it exits with a clear message and does not fail the deterministic converter.
-- With a fake provider, it writes `ai_restructured_specification.md` and `ai_restructure_warnings.md`.
+- `src/jtc_excel_md/ai_restructure.py`
+- `pyproject.toml`
+- `tests/test_ai_restructure.py`
 
-## Task 3: UI opt-in surface
+受入条件:
 
-**Objective:** Show AI status in the local demo without sending data automatically.
+- 出力ディレクトリから `book_specification.md` と `extracted.json` を読む。
+- プロバイダ未設定時は分かりやすく終了し、決定論的変換を壊さない。
+- fake providerでは `ai_restructured_specification.md` と `ai_restructure_warnings.md` を生成する。
 
-**Files:**
+## タスク3: UIのオプトイン表示
 
-- Modify: `src/jtc_excel_md/demo_server.py`
-- Test: `tests/test_demo_server.py`
+目的: ローカルデモにAI設定状態を表示する。ただし自動送信しない。
 
-**Acceptance:**
+対象:
 
-- UI shows `AI支援: 未設定 / ローカル / 外部プロバイダ` based on sanitized config.
-- External provider mode includes a privacy notice.
-- The page never displays raw API keys.
+- `src/jtc_excel_md/demo_server.py`
+- `tests/test_demo_server.py`
 
-## Task 4: Public release checklist
+受入条件:
 
-**Objective:** Make the repository safe to turn public.
+- UIが `AI支援: 未設定 / ローカル / 外部プロバイダ` を安全化済み設定から表示する。
+- 外部プロバイダ時はプライバシー注意を表示する。
+- 生のAPIキーを表示しない。
 
-**Files:**
+## タスク4: 公開リリースチェックリスト
 
-- Create: `docs/public-release-checklist.md`
+目的: リポジトリを安全にpublic化できる状態を作る。
 
-**Acceptance:**
+対象:
 
-- Checklist includes secret scan, generated output check, customer-document check, license check, vulnerability reporting, package metadata, and README quickstart.
-- Visibility flip is a manual maintainer action, not an automated script.
+- `docs/public-release-checklist.md`
 
-## Task 5: Packaging and distribution
+受入条件:
 
-**Objective:** Let OSS users install the tool predictably.
+- secret scan、生成物確認、顧客文書確認、license、脆弱性報告、パッケージメタデータ、README手順を含める。
+- visibility変更は自動化せず、保守者の手動操作にする。
 
-**Files:**
+## タスク5: 配布
 
-- Modify: `pyproject.toml`
-- Create if needed: GitHub Actions workflow
+目的: OSS利用者が予測可能にインストールできる状態にする。
 
-**Acceptance:**
+対象:
 
-- Add project URLs, license metadata, authors, and classifiers.
-- Keep CI local-equivalent: compileall, pytest, smoke where possible.
-- Package publishing remains manual until maintainers approve credentials.
+- `pyproject.toml`
+- 必要に応じてGitHub Actions workflow
+
+受入条件:
+
+- project URLs、license metadata、authors、classifiersを整える。
+- CIはローカル同等の compileall、pytest、可能ならsmokeを実行する。
+- パッケージ公開は保守者が認証情報を承認するまで手動にする。
