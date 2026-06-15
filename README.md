@@ -61,6 +61,17 @@ JTC_AI_MODEL=qwen2.5-coder:7b
 
 Provider-specific alternatives such as `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, and `GOOGLE_API_KEY` are also supported by the config loader. The repository ignores `.env` and `.env.*`; keep real API keys local.
 
+To include a secret-masked AI configuration summary in the conversion artifacts:
+
+```bash
+jtc-md-convert examples/jtc_screen_design.xlsx \
+  --out outputs/jtc_screen_design \
+  --ai-env-file .env \
+  --show-ai-config
+```
+
+The CLI records provider/model, a sanitized base URL (scheme + host + path only), and whether an API key is configured, but it does not write raw or key-derived API key text to `extracted.json`, `evaluation.md`, stdout, or the artifact ZIP. Raw API keys stay local.
+
 ## Local demo UI
 
 Run the KEPCO-oriented local demo UI:

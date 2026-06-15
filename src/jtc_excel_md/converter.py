@@ -324,8 +324,7 @@ def _render_evaluation(result: dict[str, Any]) -> str:
     title_count = sum(len(sheet["titles"]) for sheet in sheets)
     validation_count = sum(len(sheet["validations"]) for sheet in sheets)
     warning_count = len(result.get("warnings", []))
-    return "\n".join(
-        [
+    lines = [
             "# Conversion Evaluation",
             "",
             f"- Sheets: {len(sheets)}",
@@ -339,4 +338,18 @@ def _render_evaluation(result: dict[str, Any]) -> str:
             "Use `warnings.md` to review ambiguous or manually confirmed items before using the Markdown as a downstream specification source.",
             "",
         ]
-    )
+    if "ai" in result:
+        ai = result["ai"]
+        lines.extend(
+            [
+                "## AI Configuration",
+                "",
+                f"- Enabled: {ai.get('enabled')}",
+                f"- Provider: {ai.get('provider')}",
+                f"- Model: {ai.get('model')}",
+                f"- Base URL: {ai.get('base_url')}",
+                f"- API key configured: {ai.get('api_key_configured')}",
+                "",
+            ]
+        )
+    return "\n".join(lines)
