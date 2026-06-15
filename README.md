@@ -35,6 +35,36 @@ Generated files:
 - `evaluation.md` — conversion summary
 - `package.zip` — downloadable artifact bundle
 
+## Docker quick start
+
+Use Docker when you want a reproducible runtime without creating a local Python virtual environment:
+
+```bash
+docker build -t jtc-excel-md-converter:local .
+mkdir -p outputs
+docker run --rm \
+  --user "$(id -u):$(id -g)" \
+  --workdir /work \
+  -v "$PWD/examples:/work/examples:ro" \
+  -v "$PWD/outputs:/work/outputs" \
+  jtc-excel-md-converter:local \
+  examples/jtc_screen_design.xlsx --out outputs/docker-smoke
+```
+
+Or run the included Compose smoke command:
+
+```bash
+docker compose run --rm jtc-md-converter
+```
+
+Compose uses `${UID:-1000}:${GID:-1000}` so Linux bind-mounted `outputs/` files are written as your host user. If your Linux UID/GID is not `1000:1000`, run `UID=$(id -u) GID=$(id -g) docker compose run --rm jtc-md-converter`. On Windows, run from WSL/Git Bash or adapt the `docker run --user` flag to your shell.
+
+A full Docker smoke script is also available:
+
+```bash
+scripts/docker_smoke.sh
+```
+
 ## AI provider configuration
 
 Copy the template and fill only the provider you want to use:

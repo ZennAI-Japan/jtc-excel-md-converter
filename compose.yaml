@@ -1,0 +1,14 @@
+services:
+  jtc-md-converter:
+    build:
+      context: .
+    image: jtc-excel-md-converter:local
+    user: "${UID:-1000}:${GID:-1000}"
+    working_dir: /work
+    volumes:
+      - ./examples:/work/examples:ro
+      - ./outputs:/work/outputs
+    command:
+      - examples/jtc_screen_design.xlsx
+      - --out
+      - outputs/docker-compose-smoke

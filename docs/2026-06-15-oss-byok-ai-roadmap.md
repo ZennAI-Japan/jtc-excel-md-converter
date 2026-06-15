@@ -28,6 +28,7 @@
 - `tests/test_ai_config.py` verifies generic, provider-specific, Codex-first, file-based, and local no-key configuration.
 - `tests/test_ai_providers.py` verifies disabled-provider behavior, secret-safe request metadata, and injected HTTP-boundary handling.
 - `tests/test_word_converter.py` verifies `.docx` extraction and CLI artifact generation.
+- `Dockerfile`, `compose.yaml`, and `scripts/docker_smoke.sh` provide a reproducible Docker CLI runtime for local conversion.
 - `.gitignore` excludes `.env` and `.env.*` while keeping `.env.example` tracked.
 - `CONTRIBUTING.md`, `SECURITY.md`, and `LICENSE` establish initial OSS hygiene.
 
