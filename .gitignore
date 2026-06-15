@@ -10,3 +10,5 @@ outputs/
 src/*.egg-info/
 private-corpus/
 private-evaluation-output/
+public-sample-corpus/
+public-sample-evaluation-output/

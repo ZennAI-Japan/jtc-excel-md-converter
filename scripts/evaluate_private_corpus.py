@@ -14,7 +14,13 @@ MAX_RECOMMENDED_DOCUMENTS = 30
 FORMULA_PREFIXES = ("=", "+", "-", "@")
 
 
-def evaluate_corpus(input_dir: Path, output_dir: Path) -> dict[str, object]:
+def evaluate_corpus(
+    input_dir: Path,
+    output_dir: Path,
+    *,
+    summary_title: str = "実顧客文書評価サマリー",
+    bar_label: str = "10〜30本評価対象・失敗0件の基準",
+) -> dict[str, object]:
     documents = sorted(path for path in input_dir.rglob("*") if path.is_file() and path.suffix.lower() in SUPPORTED_SUFFIXES)
     output_dir.mkdir(parents=True, exist_ok=True)
     rows: list[dict[str, object]] = []
@@ -53,7 +59,10 @@ def evaluate_corpus(input_dir: Path, output_dir: Path) -> dict[str, object]:
     summary = _build_summary(rows, discovered_total=len(documents))
     _write_csv(output_dir / "evaluation_cases.csv", rows)
     (output_dir / "evaluation_summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    (output_dir / "evaluation_summary.md").write_text(_render_markdown(summary, rows), encoding="utf-8")
+    (output_dir / "evaluation_summary.md").write_text(
+        _render_markdown(summary, rows, title=summary_title, bar_label=bar_label),
+        encoding="utf-8",
+    )
     return summary
 
 
@@ -88,15 +97,21 @@ def _safe_cell(value: object) -> str:
     return text
 
 
-def _render_markdown(summary: dict[str, object], rows: list[dict[str, object]]) -> str:
+def _render_markdown(
+    summary: dict[str, object],
+    rows: list[dict[str, object]],
+    *,
+    title: str = "実顧客文書評価サマリー",
+    bar_label: str = "10〜30本評価対象・失敗0件の基準",
+) -> str:
     lines = [
-        "# 実顧客文書評価サマリー",
+        f"# {title}",
         "",
         f"- 評価文書数: {summary['total_documents']}",
         f"- 検出文書数: {summary['discovered_documents']}",
         f"- 成功: {summary['passed_documents']}",
         f"- 失敗: {summary['failed_documents']}",
-        f"- 10〜30本評価対象・失敗0件の基準: {summary['meets_private_corpus_bar']}",
+        f"- {bar_label}: {summary['meets_private_corpus_bar']}",
         "",
         "## ケース一覧",
         "",
