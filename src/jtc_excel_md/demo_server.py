@@ -13,11 +13,10 @@ from urllib.parse import unquote, urlparse
 from .converter import convert_workbook, write_outputs
 
 ARTIFACTS = [
-    ("book_specification.md", "統合Markdown仕様書"),
-    ("extracted.json", "構造化データ"),
-    ("preview.html", "セル座標付きレビュー画面"),
-    ("evaluation.md", "変換評価レポート"),
+    ("book_specification.md", "Markdownドキュメント"),
+    ("preview.html", "元文書との対応確認"),
     ("warnings.md", "要確認事項"),
+    ("extracted.json", "構造化データ"),
     ("package.zip", "一括ダウンロード"),
 ]
 
@@ -60,8 +59,8 @@ def render_demo_html(result: dict[str, Any], *, output_dir: str | Path) -> str:
     <section class="hero">
       <div class="hero-card">
         <div class="eyebrow">DOCUMENT INTELLIGENCE</div>
-        <h2>複数シートに分かれたExcel設計書を、<span class="nowrap">レビュー可能な統合仕様書</span>へ変換します。</h2>
-        <p class="lead">罫線・結合セル・入力規則・コメント・セル座標を保持し、Markdown / JSON / HTML Preview / 評価レポートとして出力します。変換できない要素はwarningsとして明示します。</p>
+        <h2>複数シートに分かれたExcel設計書を、<span class="nowrap">Markdownドキュメント</span>へ変換します。</h2>
+        <p class="lead">罫線・結合セル・入力規則・コメント・セル座標を読み取り、Markdownを中心に出力します。変換できない要素はwarningsとして明示します。</p>
       </div>
       <div class="upload-box">
         <div class="upload-title">変換対象ファイル</div>
@@ -76,7 +75,7 @@ def render_demo_html(result: dict[str, Any], *, output_dir: str | Path) -> str:
       </div>
     </section>
 
-    <section class="metrics" aria-label="変換評価サマリー">
+    <section class="metrics" aria-label="変換サマリー">
       {_render_metric('認識シート', len(sheets), 'ブック全体')}
       {_render_metric('罫線ブロック', metrics['block_count'], '表・一覧')}
       {_render_metric('入力規則', metrics['validation_count'], 'プルダウン候補')}
@@ -100,7 +99,7 @@ def render_demo_html(result: dict[str, Any], *, output_dir: str | Path) -> str:
             <div>## {escape(active_sheet.get('name', ''))} / {escape(str(active_block.get('range', '')))}</div>
             <div class="md-accent">- 入力規則: {metrics['validation_count']}件</div>
             <div>- warnings: {len(warnings)}件</div>
-            <div>- 出力: book_specification.md / extracted.json / preview.html / evaluation.md</div>
+            <div>- 出力: book_specification.md / preview.html / warnings.md / extracted.json</div>
           </div>
         </div>
       </section>

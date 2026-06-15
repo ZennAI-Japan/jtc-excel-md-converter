@@ -1,22 +1,21 @@
 # JTC Excel MD Converter
 
-Word / Excelで作られた業務文書を、検索・レビュー・AI活用で扱いやすい形式に変換するローカルファーストなOSSツールです。
+Word / Excelで作られた業務文書を、Markdownドキュメントとして読める形に変換するローカルファーストなOSSツールです。
 
-JTC企業でよく使われるWord / Excelの業務文書を、Markdown・構造化JSON・レビュー用HTMLへ変換します。Excel方眼紙に埋もれた罫線、結合セル、セル座標、入力規則、コメント、Word文書の見出し・段落・表を抽出し、後続のナレッジ化や仕様レビューに使いやすくします。テキストPDFにも対応しています。
+JTC企業でよく使われるWord / Excelの業務文書を、まずMarkdownへ変換します。Excel方眼紙に埋もれた罫線、結合セル、セル座標、入力規則、コメント、Word文書の見出し・段落・表を読み取り、人がレビューしやすいMarkdownドキュメントとして出力します。テキストPDFにも対応しています。
 
 ![JTC Excel MD Converter の概要](docs/assets/social-preview.png)
 
-## できること
+## まず確実にできること
 
-- Excel設計書をブック単位でMarkdown化
-- Word `.docx` をMarkdown / JSON化
-- テキストPDFをMarkdown / JSON化
-- Excel / Word内の画像、図形、テキストボックスをプレースホルダーとして検出
-- 元文書との対応を確認できる `preview.html` を生成
-- 要確認箇所を `warnings.md` に分離
-- `package.zip` で成果物を一括取得
+- Excel設計書をブック単位でMarkdownドキュメント化
+- Word `.docx` をMarkdownドキュメント化
+- テキストPDFをMarkdownドキュメント化
+- 罫線・結合セル・見出し・表・入力規則・コメントをMarkdownへ反映
+- 変換結果を `book_specification.md` として出力
 - 通常変換では外部AI/APIへ文書内容を送信しない
-- DockerでPython環境を作らずに実行
+
+補助的に、元文書との対応確認用の `preview.html`、機械処理用の `extracted.json`、要確認事項をまとめた `warnings.md` も生成します。
 
 ## デモ動画
 
@@ -52,15 +51,13 @@ E5:E7  テキスト / パスワード / チェックボックス / ラジオ
 - E5:E7: テキスト / パスワード / チェックボックス / ラジオ
 ```
 
-同時に、機械処理しやすいJSON、人間が元文書との対応を確認するHTML、要確認事項を分けたwarningsも出力します。
-
+主な成果物はMarkdownドキュメントです。確認用にJSON、HTML、warningsも併せて出力します。
 ```text
 outputs/jtc_screen_design/
 ├── book_specification.md  # 統合Markdown仕様書
 ├── extracted.json         # セル範囲・表・入力規則などの構造化データ
 ├── preview.html           # 元文書との対応を確認するHTML
 ├── warnings.md            # 人間レビューが必要な項目
-├── evaluation.md          # 抽出件数などの変換サマリー
 └── package.zip            # 成果物一式
 ```
 
@@ -71,19 +68,19 @@ outputs/jtc_screen_design/
 - 画面設計書: コメント付きセル F5 は人手確認してください。
 ```
 
-## できること / まだ苦手なこと
+## 対応できること / まだ苦手なこと
 
-このツールは、Word / Excel業務文書をMarkdown化するための一次変換ツールです。元文書の構造をできるだけ取り出し、AI検索・RAG・仕様レビューに渡しやすくすることを目的にしています。
+このツールは、Word / Excel業務文書をMarkdownドキュメント化するための一次変換ツールです。元文書の構造をできるだけ取り出し、人が読んで確認できるMarkdownにすることを目的にしています。
 
 | できること | まだ苦手なこと |
 | --- | --- |
 | Excelの罫線ブロックをMarkdown表に変換 | 図形や画像の意味解釈 |
 | 結合セルのタイトルを見出しとして抽出 | スキャンPDFや画像内文字のOCR |
-| 入力規則・コメント・セル座標をJSONに保持 | Office上の厳密な見た目や重なり順の再現 |
-| Wordの見出し・段落・表をMarkdown / JSON化 | 文脈を読んだ設計意図の自動補完 |
+| 入力規則・コメント・セル座標をMarkdownに反映 | Office上の厳密な見た目や重なり順の再現 |
+| Wordの見出し・段落・表をMarkdown化 | 文脈を読んだ設計意図の自動補完 |
 | 未対応・曖昧な内容をwarningsへ分離 | 変換結果を人手確認なしで完成仕様書にすること |
 
-つまり、完璧な文書理解AIではありません。まずローカルで安全にMarkdown / JSONへ変換し、`preview.html` と `warnings.md` で人間が確認できる状態にします。
+つまり、完璧な文書理解AIではありません。まずローカルで安全にMarkdownへ変換し、`preview.html` と `warnings.md` で人間が確認できる状態にします。
 
 ## ローカル実行
 
@@ -107,14 +104,13 @@ pip install -e '.[pdf]'
 jtc-md-convert path/to/design.pdf --out outputs/pdf_design
 ```
 
-生成される主なファイルは以下です。
+生成される主なファイルは以下です。中心となる成果物は `book_specification.md` です。
 
-- `extracted.json`: 抽出した構造化データ
 - `book_specification.md`: 統合Markdown仕様書
 - `specification.md`: 互換用のMarkdownファイル名
+- `extracted.json`: 抽出した構造化データ
 - `warnings.md`: 人間レビューが必要な項目
 - `preview.html`: 元文書との対応を確認するHTML
-- `evaluation.md`: 抽出件数などの変換サマリー
 - `package.zip`: 成果物一式
 
 ## Docker実行
@@ -167,7 +163,7 @@ jtc-md-demo examples/jtc_screen_design.xlsx --out outputs/demo-app --port 8765
 http://127.0.0.1:8765/
 ```
 
-このデモはローカル処理のみで、外部LLM/APIへ文書内容を送信しません。シート一覧、抽出プレビュー、統合Markdown、構造化JSON、レビューHTML、変換サマリー、warnings、ZIPダウンロードを確認できます。
+このデモはローカル処理のみで、外部LLM/APIへ文書内容を送信しません。シート一覧、抽出プレビュー、統合Markdown、構造化JSON、レビューHTML、warnings、ZIPダウンロードを確認できます。
 
 画面スモークテストは以下です。
 
@@ -175,7 +171,7 @@ http://127.0.0.1:8765/
 python scripts/smoke_demo_ui.py
 ```
 
-## AI連携
+## 任意のAI連携
 
 AI支援は任意です。初期状態では外部APIへ文書内容を送りません。
 
@@ -240,11 +236,11 @@ python scripts/fetch_public_sample_corpus.py \
 
 既定の公開サンプルは、pandasのExcelテスト用ファイル、calibreのDOCXデモ、W3C WAIのPDFテストファイルです。pandas由来のURLは特定commitに固定し、取得済みファイルもSHA-256で検証します。
 
-ここで確認できるのは、取得・変換・サマリー生成までの一連の処理が動くことです。特定組織の文書で同じ品質を保証するものではありません。導入判断では、利用可能な模擬文書や利用許可済み文書でも確認してください。
+ここで確認できるのは、公開サンプルを取得し、Markdownドキュメントへ変換できることです。特定組織の文書で同じ品質を保証するものではありません。導入判断では、利用可能な模擬文書や利用許可済み文書でも確認してください。
 
 詳しくは [公開サンプルでの動作確認](docs/public-sample-corpus.md) を参照してください。
 
-## 手元の文書セットで確認する
+## 手元の文書セットで動作確認する
 
 手元のOffice/PDF文書をまとめて確認する場合は、リポジトリ外またはGit管理対象外のディレクトリに置いて実行します。
 
@@ -256,7 +252,7 @@ python scripts/evaluate_private_corpus.py private-corpus --out private-evaluatio
 
 ## 対象範囲
 
-このツールは汎用Excelレンダラーではありません。Excelをレイアウトキャンバスとして使った業務設計書を、レビュー可能な仕様書・機械処理しやすいデータへ変換するためのツールです。
+このツールは汎用Excelレンダラーではありません。Excelをレイアウトキャンバスとして使った業務設計書を、レビュー可能なMarkdownドキュメントへ変換するためのツールです。
 
 現時点では、Excel / Word / PDFの主要テキスト、表、罫線、入力規則、コメント、画像・図形・テキストボックスのプレースホルダー検出、AI整形の明示実行、文書セットの一括確認に対応しています。画像そのもののOCR、スキャンPDFのOCR、図形の意味解釈、Office上の厳密な重なり順再現は対象外です。未対応または曖昧な内容は `warnings.md` に出力します。
 

@@ -2,7 +2,7 @@
 
 > **Hermes / Codex向け:** この計画は `DESIGN.md` と `docs/design/kepco-demo-app-mockup.png` を正とし、TDDで小さく実装する。営業デモで見せる画面には内部メモ、開発都合、ミラ口調、安い比較訴求を出さない。
 
-**目的:** 複数シートExcel設計書をアップロードし、Markdown / JSON / HTMLプレビュー / 評価レポート / warnings を確認・ダウンロードできる、関西電力様向けの最小デモアプリを作る。
+**目的:** 複数シートExcel設計書をアップロードし、Markdownドキュメント / HTMLプレビュー / warnings を確認・ダウンロードできる、関西電力様向けの最小デモアプリを作る。
 
 **アーキテクチャ:** 既存のPython変換CLIをドメイン中核として維持し、最初はローカル実行のWeb UIを薄く載せる。UIは `DESIGN.md` のトークンを使い、変換成果物は既存converterの出力をそのまま参照する。外部LLM/API送信は初期デモでは行わない。
 
@@ -15,7 +15,7 @@
 1. `.xlsx` を1ファイル指定して変換できる。
 2. ブック全体成果物として `book_specification.md` を表示できる。
 3. シート一覧、選択シートプレビュー、成果物一覧、warnings一覧が1画面で確認できる。
-4. `book_specification.md` / `extracted.json` / `preview.html` / `evaluation.md` / ZIP の導線を表示できる。
+4. `book_specification.md` / `preview.html` / `warnings.md` / ZIP の導線を表示できる。
 5. UIは `docs/design/kepco-demo-app-mockup.png` の方向性に沿う。
 6. 顧客向け表示に以下を出さない。
    - 内部メモ

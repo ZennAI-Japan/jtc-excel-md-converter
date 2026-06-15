@@ -293,8 +293,8 @@
     <section class="hero">
       <div class="hero-card">
         <div class="eyebrow">DOCUMENT INTELLIGENCE</div>
-        <h2>複数シートに分かれたExcel設計書を、<span class="nowrap">レビュー可能な統合仕様書</span>へ変換します。</h2>
-        <p class="lead">罫線・結合セル・入力規則・コメント・セル座標を保持し、Markdown / JSON / HTML Preview / 評価レポートとして出力します。変換できない要素はwarningsとして明示します。</p>
+        <h2>複数シートに分かれたExcel設計書を、<span class="nowrap">Markdownドキュメント</span>へ変換します。</h2>
+        <p class="lead">罫線・結合セル・入力規則・コメント・セル座標を読み取り、Markdownを中心に出力します。変換できない要素はwarningsとして明示します。</p>
       </div>
       <div class="upload-box">
         <div class="upload-title">変換対象ファイル</div>
@@ -309,7 +309,7 @@
       </div>
     </section>
 
-    <section class="metrics" aria-label="変換評価サマリー">
+    <section class="metrics" aria-label="変換サマリー">
       <div class="metric"><div class="label">認識シート</div><div class="value">12</div><div class="sub">表紙・履歴を含む</div></div>
       <div class="metric"><div class="label">罫線ブロック</div><div class="value">48</div><div class="sub">画面・項目・一覧</div></div>
       <div class="metric"><div class="label">入力規則</div><div class="value">31</div><div class="sub">プルダウン候補</div></div>
@@ -359,7 +359,7 @@
             <div>## 03_点検結果入力 / B4:F9</div>
             <div class="md-accent">- 入力規則: 判定 = 正常 / 要確認 / 異常</div>
             <div>- warnings: コメント付きセル F7、外部参照の可能性 E5</div>
-            <div>- 出力: book_specification.md / preview.html / evaluation.md</div>
+            <div>- 出力: book_specification.md / preview.html / warnings.md</div>
           </div>
         </div>
       </section>
